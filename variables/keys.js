@@ -1,4 +1,5 @@
 module.exports = {
+    secretPhrase: 'Advanced-web-application-development--Internet-banking--group-2',
     pgp: {
         public: `-----BEGIN PGP PUBLIC KEY BLOCK-----
         Version: Keybase OpenPGP v1.0.0

@@ -1,12 +1,16 @@
 const express = require('express');
-const router = express.Router();
 const openpgp = require('openpgp');
 
-router.post('/query-account-information', async (req, res, next) => {
+const otherBankMiddleware = require('./other-banks.middlewares');
+
+const router = express.Router();
+const checkValidity = otherBankMiddleware.checkValidity;
+
+router.post('/query-account-information', checkValidity, async (req, res) => {
     res.send('APP IS RUNNING');
 });
 
-router.post('/payment-on-account', async (req, res, next) => {
+router.post('/payment-on-account', async (req, res) => {
     res.send('APP IS RUNNING');
 });
 
