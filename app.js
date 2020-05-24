@@ -1,4 +1,3 @@
-
 require('express-async-errors');
 const express = require('express');
 const createError = require('http-errors');
@@ -6,6 +5,7 @@ const morgan = require('morgan');
 const cors = require('cors');
 
 const indexRouter = require('./src/home/home.routes');
+const otherbankRouter = require('./src/other-banks/other-banks.routes');
 
 const app = express();
 
@@ -19,9 +19,12 @@ app.use(cors({
 
 app.use(morgan('dev'));
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({
+  extended: false
+}));
 
 app.use('/', indexRouter);
+app.use('/other-banks', otherbankRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
