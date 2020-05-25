@@ -22,7 +22,7 @@ exports.generateToken = async (payload, secretSignature, tokenLife) => {
 }
 
 // Verify token
-exports.verifyToken = async (token, secretSignature, fn) => {
+exports.verifyToken = async (token, secretSignature) => {
     try {
         const decoded = await jwt_verify(token, secretSignature);
         return decoded;
