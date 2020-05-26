@@ -1,4 +1,5 @@
 module.exports = {
+    validityTime: 180,
     secretString: 'Internet-banking--group-2',
     pgp: {
         secretPhrase: 'Advanced-web-application-development--Internet-banking--group-2',
