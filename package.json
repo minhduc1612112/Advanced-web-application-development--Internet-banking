@@ -7,7 +7,8 @@
     "npm": "6.12"
   },
   "scripts": {
-    "start": "nodemon ./bin/www"
+    "start": "node ./bin/www",
+    "dev":"nodemon ./bin/www"
   },
   "dependencies": {
     "cors": "^2.8.5",
