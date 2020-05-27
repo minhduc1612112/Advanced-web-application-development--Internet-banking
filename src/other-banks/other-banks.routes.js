@@ -196,11 +196,11 @@ const generateKey = async () => {
     //     iat: commonMethod.getIssuedAtNow()
     // }
     const data = {
-        srcAccountNumber:'987654321',
+        srcAccountNumber: '987654321',
         srcBankCode: 'KL_BANK',
         desAccountNumber: '123456789',
         desBankCode: 'MD_BANK',
-        money:10000000,
+        money: 10000000,
         content: 'Trả lương',
         iat: commonMethod.getIssuedAtNow()
     }
