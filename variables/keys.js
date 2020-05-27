@@ -1,4 +1,6 @@
 module.exports = {
+    bankCode:'GROUP2Bank',
+    bankName:'Ngân hàng GROUP2',
     validityTime: 180,
     secretString: 'Internet-banking--group-2',
     pgp: {
