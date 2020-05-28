@@ -23,15 +23,16 @@ async function connect(url) {
         });
 }
 
+var db = {};
+
 async function initdb() {
     const database = await connect(PROD_URI);
-    return database;
+    db = database;
 }
 
 module.exports = {
-    initdb,
+    initdb: initdb,
     detail: async (COLLECTION, id) => {
-        const db = await initdb();
         const results = await db.collection(COLLECTION).find({
                 _id: ObjectId(id)
             })
@@ -42,21 +43,17 @@ module.exports = {
         return results[0];
     },
     all: async (COLLECTION) => {
-        const db = await initdb();
         return await db.collection(COLLECTION).find({})
             .toArray();
     },
     list: async (COLLECTION, condition) => {
-        const db = await initdb();
         return db.collection(COLLECTION).find(condition).toArray();
     },
     get: async (COLLECTION, condition) => {
-        const db = await initdb();
         return db.collection(COLLECTION).findOne(condition);
     },
     add: async (COLLECTION, item) => {
         try {
-            const db = await initdb();
             await db.collection(COLLECTION).insertOne(item);
             return true;
         } catch (error) {
@@ -66,7 +63,6 @@ module.exports = {
     },
     delete: async (COLLECTION, id) => {
         try {
-            const db = await initdb();
             await db.collection(COLLECTION).deleteOne({
                 _id: ObjectId(id)
             });
@@ -78,7 +74,6 @@ module.exports = {
     },
     update: async (COLLECTION, id, item) => {
         try {
-            const db = await initdb();
             await db.collection(COLLECTION).updateOne({
                 _id: ObjectId(id)
             }, {

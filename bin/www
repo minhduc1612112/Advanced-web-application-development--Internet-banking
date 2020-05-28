@@ -13,10 +13,6 @@ const {
   initdb
 } = require('../config/dbs');
 
-/**
- * Get port from environment and store in Express.
- */
-
 let server = http.createServer(app);
 const port = normalizePort(process.env.PORT || '3000');
 initdb().then(() => {
