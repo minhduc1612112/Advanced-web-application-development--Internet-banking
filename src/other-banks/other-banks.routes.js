@@ -36,7 +36,7 @@ const checkValidityData = async (encryptedData) => {
     return data;
 }
 
-router.post('/query-account-information', async (req, res, next) => {
+router.post('/query-account-information', async (req, res) => {
     // INPUT
     // const data = {
     //     desAccountNumber: '123456789',
@@ -66,17 +66,26 @@ x5npQs2BbH1PsDzQVxY4TVd7hBL1Bes8Il2l4jRaAgOZX/P9oms4xsjt
 
     const decodedHashedData = await checkValidityPartner(xHashedData);
     if (!decodedHashedData) {
-        return res.status(401).send('Ngân hàng của bạn chưa được liên kết với ngân hàng này.');
+        return res.status(401).send({
+            status: -1,
+            msg: 'Ngân hàng của bạn chưa được liên kết với ngân hàng này.'
+        });
     }
 
     const validityTime = checkValidityTime(decodedHashedData);
     if (!validityTime) {
-        return res.status(400).send('Lời gọi này là thông tin cũ đã quá hạn.');
+        return res.status(400).send({
+            status: -2,
+            msg: 'Lời gọi này là thông tin cũ đã quá hạn.'
+        });
     }
 
     const data = await checkValidityData(encryptedData);
     if (!data) {
-        return res.status(400).send('Lỗi bảo mật: Thông tin gói tin gửi đi đã bị chỉnh sửa, vui lòng không thực hiện giao dịch để đảm bảo an toàn.')
+        return res.status(400).send({
+            status: -3,
+            msg: 'Lỗi bảo mật: Thông tin gói tin gửi đi đã bị chỉnh sửa, vui lòng không thực hiện giao dịch để đảm bảo an toàn.'
+        });
     }
 
     // Query data từ database
@@ -108,12 +117,18 @@ router.post('/payment-on-account', async (req, res) => {
 
     const decodedHashedData = await checkValidityPartner(xHashedData);
     if (!decodedHashedData) {
-        return res.status(401).send('Ngân hàng của bạn chưa được liên kết với ngân hàng này.');
+        return res.status(401).send({
+            status: -1,
+            msg: 'Ngân hàng của bạn chưa được liên kết với ngân hàng này.'
+        });
     }
 
     const validityTime = checkValidityTime(decodedHashedData);
     if (!validityTime) {
-        return res.status(400).send('Lời gọi này là thông tin cũ đã quá hạn.');
+        return res.status(400).send({
+            status: -2,
+            msg: 'Lời gọi này là thông tin cũ đã quá hạn.'
+        });
     }
 
     // const encryptedData = req.body.encrypted_data;
@@ -138,7 +153,10 @@ Yw7gA1EkxCMEmYnGBHtBQlLAECsvPjALBdADUxox7RJuDcAeGaKlYxu+MLFW
 
     const data = await checkValidityData(encryptedData);
     if (!data) {
-        return res.status(400).send('Lỗi bảo mật: Thông tin gói tin gửi đi đã bị chỉnh sửa, vui lòng không thực hiện giao dịch để đảm bảo an toàn.')
+        return res.status(400).send({
+            status: -3,
+            msg: 'Lỗi bảo mật: Thông tin gói tin gửi đi đã bị chỉnh sửa, vui lòng không thực hiện giao dịch để đảm bảo an toàn.'
+        });
     }
 
     // const signedData = req.body.signed_data;
@@ -161,7 +179,10 @@ l00/9sO2O9MXl6AIqpw128E=
 -----END PGP SIGNATURE-----`;
     const verifiedData = await otherBankMethod.verified(signedData);
     if (!verifiedData) {
-        return res.status(409).send('Chữ kí không hợp lệ.');
+        return res.status(400).send({
+            status: -4,
+            msg: 'Chữ kí không hợp lệ.'
+        });
     }
 
     // Thực hiện nạp tiền vào tài khoản đó
