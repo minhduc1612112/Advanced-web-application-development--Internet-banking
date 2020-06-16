@@ -1,2 +1,2 @@
-# Advanced-web-application-development--Internet-banking
-## URL Back-end: https://staging-be-internet-banking.herokuapp.com
+# Back-end cho ứng dụng internet banking
+## URL Back-end: https://api-server-internet-banking.herokuapp.com
