@@ -30,59 +30,62 @@ async function initdb() {
     db = database;
 }
 
-module.exports = {
-    initdb: initdb,
-    detail: async (COLLECTION, id) => {
-        const results = await db.collection(COLLECTION).find({
-                _id: ObjectId(id)
-            })
-            .toArray();
-        if (results.length === 0) {
-            return null;
-        }
-        return results[0];
-    },
-    all: async (COLLECTION) => {
-        return await db.collection(COLLECTION).find({})
-            .toArray();
-    },
-    list: async (COLLECTION, condition) => {
-        return db.collection(COLLECTION).find(condition).toArray();
-    },
-    get: async (COLLECTION, condition) => {
-        return db.collection(COLLECTION).findOne(condition);
-    },
-    add: async (COLLECTION, item) => {
-        try {
-            await db.collection(COLLECTION).insertOne(item);
-            return true;
-        } catch (error) {
-            console.log("Error in adding item: " + error.message);
-            return false;
-        }
-    },
-    delete: async (COLLECTION, id) => {
-        try {
-            await db.collection(COLLECTION).deleteOne({
-                _id: ObjectId(id)
-            });
-            return true;
-        } catch (error) {
-            console.log("Error in deleting item: " + error.message);
-            return false;
-        }
-    },
-    update: async (COLLECTION, id, item) => {
-        try {
-            await db.collection(COLLECTION).updateOne({
-                _id: ObjectId(id)
-            }, {
-                $set: item
-            });
-            return true;
-        } catch (error) {
-            console.log("Error in updating item: " + error.message);
-            return false;
+exports.initdb = initdb;
+
+module.exports.collection = (COLLECTION) => {
+    return {
+        detail: async (id) => {
+            const results = await db.collection(COLLECTION).find({
+                    _id: ObjectId(id)
+                })
+                .toArray();
+            if (results.length === 0) {
+                return null;
+            }
+            return results[0];
+        },
+        all: async () => {
+            return await db.collection(COLLECTION).find({})
+                .toArray();
+        },
+        list: async (condition) => {
+            return db.collection(COLLECTION).find(condition).toArray();
+        },
+        get: async (condition) => {
+            return db.collection(COLLECTION).findOne(condition);
+        },
+        add: async (item) => {
+            try {
+                await db.collection(COLLECTION).insertOne(item);
+                return true;
+            } catch (error) {
+                console.log("Error in adding item: " + error.message);
+                return false;
+            }
+        },
+        delete: async (id) => {
+            try {
+                await db.collection(COLLECTION).deleteOne({
+                    _id: ObjectId(id)
+                });
+                return true;
+            } catch (error) {
+                console.log("Error in deleting item: " + error.message);
+                return false;
+            }
+        },
+        update: async (id, item) => {
+            try {
+                await db.collection(COLLECTION).updateOne({
+                    _id: ObjectId(id)
+                }, {
+                    $set: item
+                });
+                return true;
+            } catch (error) {
+                console.log("Error in updating item: " + error.message);
+                return false;
+            }
         }
     }
 }
