@@ -1,29 +1,39 @@
 const jwt = require('jsonwebtoken');
+const promisify = require('util').promisify;
 
-exports.generateToken = async (payload, secretSignature, tokenLife, accessToken) => {
-    // Thực hiện ký và tạo token
-    jwt.sign({
+const sign = promisify(jwt.sign).bind(jwt);
+const verify = promisify(jwt.verify).bind(jwt);
+
+exports.generateToken = async (payload, secretSignature, tokenLife) => {
+    try {
+        return await sign({
             payload
-        },
-        secretSignature, {
+        }, secretSignature, {
             algorithm: "HS256",
             expiresIn: tokenLife,
-        },
-        (error, token) => {
-            if (error) {
-                console.log(`Lỗi tạo token: ${error}`);
-                return accessToken(false);
-            }
-            return accessToken(token);
         });
+    } catch (error) {
+        console.log('Error in generate access token: ' + error);
+        return null;
+    }
 }
 
-exports.verifyToken = async (token, secretKey, fn) => {
-    jwt.verify(token, secretKey, (error, decoded) => {
-        if (error) {
-            console.log("Sai token" + error);
-            return fn(false);
-        }
-        fn(decoded);
-    });
+exports.verifyToken = async (token, secretKey) => {
+    try {
+        return await verify(token, secretKey);
+    } catch (error) {
+        console.log('Error in verify access token: ' + error);
+        return null;
+    }
+}
+
+exports.decodeToken = async (token, secretKey) => {
+    try {
+        return await verify(token, secretKey, {
+            ignoreExpiration: true
+        });
+    } catch (error) {
+        console.log('Error in decode access token: ' + error);
+        return null;
+    }
 }

@@ -1,22 +1,26 @@
-const package = require('../../config/packages');
+const jwtVariable = require('../../variables/jwt');
+
+const userModel = require('../users/users.models');
+
+const authMethod = require('./auth.methods');
 
 exports.isAuth = async (req, res, next) => {
-    package.passport.authenticate('jwt', {
-        session: false
-    }, (err, user, info) => {
-        if (err) {
-            console.log(err);
-            return res.status(500).send('Đã xảy ra lỗi, vui lòng thử lại.');
-        }
-        if (info !== undefined) {
-            console.log(info.message);
-            return res.status(401).send('Thông tin đăng nhập không chính xác.');
-        } else {
-            //Lưu thông tin user vào req.user
-            req.user = user;
+    // Lấy access token từ header
+    const accessTokenFromHeader = req.headers.x_authorization;
+    if (!accessTokenFromHeader) {
+        console.log('Không tìm thấy access token.');
+        return res.status(401).send('Bạn không có quyền truy cập vào tính năng này!');
+    }
 
-            //Qua controller tiếp theo
-            return next();
-        }
-    })(req, res, next);
+    const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET || jwtVariable.auth.accessTokenSecret;
+
+    const verified = await authMethod.verifyToken(accessTokenFromHeader, accessTokenSecret);
+    if (!verified) {
+        return res.status(401).send('Bạn không có quyền truy cập vào tính năng này!');
+    }
+
+    const user = await userModel.detail(verified.payload._id);
+    req.user = user;
+
+    return next();
 }

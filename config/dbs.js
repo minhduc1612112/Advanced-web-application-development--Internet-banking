@@ -34,9 +34,9 @@ exports.initdb = initdb;
 
 module.exports.collection = (COLLECTION) => {
     return {
-        detail: async (id) => {
+        detail: async (_id) => {
             const results = await db.collection(COLLECTION).find({
-                    _id: ObjectId(id)
+                    _id: ObjectId(_id)
                 })
                 .toArray();
             if (results.length === 0) {
@@ -48,11 +48,11 @@ module.exports.collection = (COLLECTION) => {
             return await db.collection(COLLECTION).find({})
                 .toArray();
         },
-        list: async (condition) => {
-            return db.collection(COLLECTION).find(condition).toArray();
+        list: async (query) => {
+            return db.collection(COLLECTION).find(query).toArray();
         },
-        get: async (condition) => {
-            return db.collection(COLLECTION).findOne(condition);
+        get: async (query) => {
+            return db.collection(COLLECTION).findOne(query);
         },
         add: async (item) => {
             try {
@@ -63,24 +63,18 @@ module.exports.collection = (COLLECTION) => {
                 return false;
             }
         },
-        delete: async (id) => {
+        delete: async (query) => {
             try {
-                await db.collection(COLLECTION).deleteOne({
-                    _id: ObjectId(id)
-                });
+                await db.collection(COLLECTION).deleteMany(query);
                 return true;
             } catch (error) {
                 console.log("Error in deleting item: " + error.message);
                 return false;
             }
         },
-        update: async (id, item) => {
+        update: async (query, value) => {
             try {
-                await db.collection(COLLECTION).updateOne({
-                    _id: ObjectId(id)
-                }, {
-                    $set: item
-                });
+                await db.collection(COLLECTION).updateMany(query, value);
                 return true;
             } catch (error) {
                 console.log("Error in updating item: " + error.message);
