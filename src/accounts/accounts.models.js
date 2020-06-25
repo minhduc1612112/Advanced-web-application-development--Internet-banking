@@ -9,7 +9,7 @@ module.exports = {
     detail: async (_id) => {
         return await db.collection(COLLECTION).detail(_id);
     },
-    getUser: async (username) => await db.collection(COLLECTION).get({
+    getAccount: async (username) => await db.collection(COLLECTION).get({
         username
     }),
     validPassword: async (username, password) => {

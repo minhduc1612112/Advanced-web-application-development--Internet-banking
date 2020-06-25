@@ -8,8 +8,8 @@ exports.login = async (req, res) => {
     const username = req.body.username.toLowerCase() || 'test';
     const password = req.body.password || '12345';
 
-    const user = await accountModel.getUser(username);
-    if (!user) {
+    const account = await accountModel.getAccount(username);
+    if (!account) {
         return res.status(401).send('Tên đăng nhập không tồn tại.');
     }
 
@@ -22,7 +22,7 @@ exports.login = async (req, res) => {
     const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET || jwtVariable.auth.accessTokenSecret;
 
     const dataForAccessToken = {
-        _id: user._id
+        _id: account._id
     };
     const accessToken = await authMethod.generateToken(dataForAccessToken, accessTokenSecret, accessTokenLife);
     if (!accessToken) {
@@ -30,19 +30,19 @@ exports.login = async (req, res) => {
     }
 
     let refreshToken = randToken.generate(jwtVariable.auth.refreshTokenSize); // tạo 1 refresh token ngẫu nhiên
-    if (!user.refreshToken) { // Nếu user này chưa có refresh token thì lưu refresh token đó vào database
+    if (!account.refreshToken) { // Nếu user này chưa có refresh token thì lưu refresh token đó vào database
         await accountModel.updateRefreshToken(user._id, refreshToken);
     } else { // Nếu user này đã có refresh token thì lấy refresh token đó từ database
-        refreshToken = user.refreshToken;
+        refreshToken = account.refreshToken;
     }
 
-    user.refreshToken = refreshToken;
-    delete user.password;
+    account.refreshToken = refreshToken;
+    delete account.password;
     return res.json({
         msg: "Đăng nhập thành công.",
         accessToken,
         refreshToken,
-        user
+        account
     });
 }
 
