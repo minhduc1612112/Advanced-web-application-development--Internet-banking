@@ -12,14 +12,7 @@ const authRouter = require('./src/auth/auth.routes');
 
 const app = express();
 
-// ========== Configure CORS ==========
-app.use(cors({
-  credentials: true,
-  allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept", "X-Access-Token", "Authorization"],
-  methods: "GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS"
-}));
-// ====================================
-
+app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({
