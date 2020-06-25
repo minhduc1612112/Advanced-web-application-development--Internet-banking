@@ -1,6 +1,6 @@
 const jwtVariable = require('../../variables/jwt');
 
-const userModel = require('../users/users.models');
+const userModel = require('../accounts/accounts.models');
 
 const authMethod = require('./auth.methods');
 

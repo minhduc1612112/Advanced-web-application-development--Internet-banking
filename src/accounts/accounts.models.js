@@ -3,7 +3,7 @@ const ObjectId = require('mongodb').ObjectId;
 
 const db = require('../../config/dbs');
 
-const COLLECTION = 'users';
+const COLLECTION = 'Accounts';
 
 module.exports = {
     detail: async (_id) => {

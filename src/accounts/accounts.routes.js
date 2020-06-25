@@ -5,8 +5,8 @@ const {
     isAuth
 } = require('../auth/auth.middlewares');
 
-const userController = require('./users.controllers');
+const accountController = require('./accounts.controllers');
 
-router.get('/', isAuth, userController.getProfile);
+router.get('/', isAuth, accountController.getProfile);
 
 module.exports = router;

@@ -1,6 +1,6 @@
 const randToken = require('rand-token');
 
-const userModel = require('../users/users.models');
+const accountModel = require('../accounts/accounts.models');
 const authMethod = require('./auth.methods');
 const jwtVariable = require('../../variables/jwt');
 
@@ -8,12 +8,12 @@ exports.login = async (req, res) => {
     const username = req.body.username.toLowerCase() || 'test';
     const password = req.body.password || '12345';
 
-    const user = await userModel.getUser(username);
+    const user = await accountModel.getUser(username);
     if (!user) {
         return res.status(401).send('Tên đăng nhập không tồn tại.');
     }
 
-    const isPasswordValid = await userModel.validPassword(username, password);
+    const isPasswordValid = await accountModel.validPassword(username, password);
     if (!isPasswordValid) {
         return res.status(401).send('Mật khẩu không chính xác.');
     }
@@ -31,7 +31,7 @@ exports.login = async (req, res) => {
 
     let refreshToken = randToken.generate(jwtVariable.auth.refreshTokenSize); // tạo 1 refresh token ngẫu nhiên
     if (!user.refreshToken) { // Nếu user này chưa có refresh token thì lưu refresh token đó vào database
-        await userModel.updateRefreshToken(user._id, refreshToken);
+        await accountModel.updateRefreshToken(user._id, refreshToken);
     } else { // Nếu user này đã có refresh token thì lấy refresh token đó từ database
         refreshToken = user.refreshToken;
     }
@@ -71,7 +71,7 @@ exports.refreshToken = async (req, res) => {
     const _id = decoded.payload._id; // Lấy username từ payload
 
     // Kiểm tra refresh token có hợp lệ không (giống như token được lưu trong database)
-    const verifyRefreshToken = await userModel.verifyRefreshToken(_id, refreshToken);
+    const verifyRefreshToken = await accountModel.verifyRefreshToken(_id, refreshToken);
     if (verifyRefreshToken === false) {
         return res.status(400).send('Refresh token không hợp lệ.');
     }

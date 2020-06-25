@@ -6,8 +6,8 @@ const cors = require('cors');
 
 const indexRouter = require('./src/home/home.routes');
 const otherbankRouter = require('./src/other-banks/other-banks.routes');
-const userRouter = require('./src/users/users.routes');
-const transferRouter = require('./src/transfer/transfer.routes');
+const userRouter = require('./src/accounts/accounts.routes');
+const transactionRouter = require('./src/transactions/transactions.routes');
 const authRouter = require('./src/auth/auth.routes');
 
 const app = express();
@@ -29,7 +29,7 @@ app.use(express.urlencoded({
 app.use('/', indexRouter);
 app.use('/other-banks', otherbankRouter);
 app.use('/users', userRouter);
-app.use('/transfer', transferRouter);
+app.use('/transactions', transactionRouter);
 app.use('/auth', authRouter);
 
 // catch 404 and forward to error handler
