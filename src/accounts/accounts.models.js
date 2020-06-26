@@ -12,21 +12,21 @@ module.exports = {
     getAccount: async (username) => await db.collection(COLLECTION).get({
         username
     }),
-    validPassword: async (username, password) => {
-        const user = await db.collection(COLLECTION).get({
-            username
+    validPassword: async (_id, password) => {
+        const account = await db.collection(COLLECTION).get({
+            _id
         });
-        if (!user) {
+        if (!account) {
             return false;
         }
-        return bcrypt.compare(password, user.password);
+        return bcrypt.compare(password, account.password);
     },
     verifyRefreshToken: async (_id, refreshToken) => {
-        const user = await db.collection(COLLECTION).detail(_id);
-        if (!user) {
+        const account = await db.collection(COLLECTION).detail(_id);
+        if (!account) {
             return false;
         }
-        if (user.refreshToken !== refreshToken) {
+        if (account.refreshToken !== refreshToken) {
             return false;
         }
         return true;
@@ -40,6 +40,17 @@ module.exports = {
                 refreshToken: refreshToken
             }
         };
+        return await db.collection(COLLECTION).update(query, newValue);
+    },
+    updatePassword: async (_id, password) => {
+        const query = {
+            _id: ObjectId(_id)
+        }
+        const newValue = {
+            $set: {
+                password: password
+            }
+        }
         return await db.collection(COLLECTION).update(query, newValue);
     }
 }

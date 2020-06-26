@@ -19,8 +19,8 @@ exports.isAuth = async (req, res, next) => {
         return res.status(401).send('Bạn không có quyền truy cập vào tính năng này!');
     }
 
-    const user = await accountModel.detail(verified.payload._id);
-    req.user = user;
+    const account = await accountModel.detail(verified.payload._id);
+    req.account = account;
 
     return next();
 }

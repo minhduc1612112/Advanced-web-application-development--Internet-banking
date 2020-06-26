@@ -7,6 +7,6 @@ const {
 
 const accountController = require('./accounts.controllers');
 
-router.get('/', isAuth, accountController.getProfile);
+router.post('/change-password', isAuth, accountController.changePassword);
 
 module.exports = router;

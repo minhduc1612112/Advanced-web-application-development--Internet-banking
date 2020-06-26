@@ -13,7 +13,7 @@ exports.login = async (req, res) => {
         return res.status(401).send('Tên đăng nhập không tồn tại.');
     }
 
-    const isPasswordValid = await accountModel.validPassword(username, password);
+    const isPasswordValid = await accountModel.validPassword(account._id, password);
     if (!isPasswordValid) {
         return res.status(401).send('Mật khẩu không chính xác.');
     }

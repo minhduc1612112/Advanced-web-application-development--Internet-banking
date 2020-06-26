@@ -4,5 +4,4 @@ module.exports = {
         accessTokenLife: "10m",
         refreshTokenSize: 100,
     },
-    SALT_ROUNDS: 10,
 }

@@ -6,7 +6,7 @@ const cors = require('cors');
 
 const indexRouter = require('./src/home/home.routes');
 const otherbankRouter = require('./src/other-banks/other-banks.routes');
-const userRouter = require('./src/accounts/accounts.routes');
+const accountRouter = require('./src/accounts/accounts.routes');
 const transactionRouter = require('./src/transactions/transactions.routes');
 const authRouter = require('./src/auth/auth.routes');
 
@@ -21,7 +21,7 @@ app.use(express.urlencoded({
 
 app.use('/', indexRouter);
 app.use('/other-banks', otherbankRouter);
-app.use('/users', userRouter);
+app.use('/accounts', accountRouter);
 app.use('/transactions', transactionRouter);
 app.use('/auth', authRouter);
 
