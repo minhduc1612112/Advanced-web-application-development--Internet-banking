@@ -1,4 +1,14 @@
 {
+    Accounts:[
+        {
+            accountNumber:'1111000000001',
+            accountName:'LE MINH DUC'
+        },
+        {
+            accountNumber:'1111000000002',
+            accountName:'VO LE NGUYEN THAO'
+        },
+    ]
     secretString: 'Internet-banking--group-2',
     API1 = {
         Name: "Truy vấn thông tin tài khoản của ngân hàng khác",
