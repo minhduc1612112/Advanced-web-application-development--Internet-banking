@@ -12,6 +12,9 @@ module.exports = {
     getAccount: async (username) => await db.collection(COLLECTION).get({
         username
     }),
+    getAccountByAccountNumber: async (accountNumber) => await db.collection(COLLECTION).get({
+        accountNumber
+    }),
     validPassword: async (_id, password) => {
         const account = await db.collection(COLLECTION).get({
             _id

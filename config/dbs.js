@@ -34,7 +34,8 @@ exports.initdb = initdb;
 
 module.exports.collection = (COLLECTION) => {
     return {
-        detail: async (_id) => {
+        detail: 
+        async (_id) => {
             const results = await db.collection(COLLECTION).find({
                     _id: ObjectId(_id)
                 })

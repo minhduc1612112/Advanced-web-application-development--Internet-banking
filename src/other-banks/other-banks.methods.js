@@ -57,8 +57,8 @@ exports.signed = async (data) => {
     try {
         await openpgp.initWorker();
 
-        const privateKeyArmored = key.pgp.private; // encrypted private key
-        const passphrase = key.pgp.secretPhrase; // what the private key is encrypted with
+        const privateKeyArmored = keyAnotherBank.pgp.private; // encrypted private key
+        const passphrase = keyAnotherBank.pgp.secretPhrase; // what the private key is encrypted with
 
         const {
             keys: [privateKey]
