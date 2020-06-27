@@ -1,6 +1,8 @@
 const express = require('express');
 const openpgp = require('openpgp');
 
+const accountModel = require('../accounts/accounts.models');
+
 const commonMethod = require('../common/common.methods');
 const otherBankMethod = require('./other-banks.methods');
 
@@ -39,8 +41,8 @@ const checkValidityData = async (encryptedData) => {
 router.post('/query-account-information', async (req, res) => {
     // INPUT
     // const data = {
-    //     desAccountNumber: '123456789',
-    //     desBankCode,
+    //     desAccountNumber: '1111000000001',
+    //     desBankCode: 'GROUP2Bank',
     //     iat: commonMethod.getIssuedAtNow()
     // }
     // headers: x_hashed_data
@@ -52,16 +54,17 @@ router.post('/query-account-information', async (req, res) => {
 Version: OpenPGP.js v4.10.4
 Comment: https://openpgpjs.org
 
-wcBMA3+LEt36YyzmAQf+Pld39G8LHzNwdmg3weyxIDG8Ap1J5W9YVD/JqF3J
-b3rJqCBHyAgvScs/G9dFn83C2UasEX8GfdY9XcjFGv85nF0zNKA9ggyiw1iq
-zEocaPGT02hJDPQ+abTVXr0Sk/cjlFTZKZmCcCtK5WNk+hz7rJvsvwNIBnJN
-mlbufJKZE5/1tz5pD6JkTuL8oZxlhBrbULtZOCDBX0VLUHl2wft8seyjGmlq
-1AqKnu6dySFiS+8gMHnmUOmI2YPjfbN/V4kZzyfT8NcXD2rdMB1dCxfPAc5g
-zIysQTPW7HvQoKKvSiCu3iQRkX0kaz9Y9K7q+RSNZqBdZxHwszJzUP/Y6kr2
-JtKBAbQ7Cu93XUki3QVsYowurhip3/y6a9lNsVjsPf5aI5hyNKf1hmcJSSm8
-LSw4VTerCXfNxA2tlXboaUAUfFKvxGZfaR3ff2wD7s2Ni0am74F8bLp7Uz/M
-x5npQs2BbH1PsDzQVxY4TVd7hBL1Bes8Il2l4jRaAgOZX/P9oms4xsjt
-=T36u
+wcBMA3+LEt36YyzmAQf5AD8epp4FC3tUTRHXEJO1ZCV9+MfpNwuargmGqbsh
+X/h2Sih2hKAWbkStr1n3kX/LWfJ/awBcX292aPTMka/hgy9TUHz5thEq/bqx
+Qq/xLD5zVJZBDft+U+T+KrPlyvNBdefMTAKQAwY7mUlu7OCFmPwj8wtefoNL
+RgxHNIV4l2UHBXzOZZr+QjHsKuDx7EbbIJitXWqPcOCAO65wkGk7vjAfpsWy
+5PM3RHHUT25hW9QUY99OYC/mp5cOwSIzLkUcP77hx2quxqSJDHKk2hW7HL0Y
+2gIQ24ngNAmRgT6ZiAiYjG/BDeJzKNgjRhzGv+n0RwnJ5bGEFpCAOoXCp7B5
+WdKFAXmTypItUK7UdxtaTLiZJJM2dpmuxX2TuBA0U/U3v8eMVyZlZ3m8k+s1
+Tp+BlAstRGsM3HcCxLkp1Uvnfms6c4mUWxVe9+ZockTOsoVdm6XKR8kNg8Dv
+oIGLe03l4Ke7Mq4/VvIqdF7ULIRYNav7ysnwiXoapvA4Dx0y998RLpaKfsbK
+QQ==
+=gVMh
 -----END PGP MESSAGE-----`;
 
     const decodedHashedData = await checkValidityPartner(xHashedData);
@@ -89,27 +92,32 @@ x5npQs2BbH1PsDzQVxY4TVd7hBL1Bes8Il2l4jRaAgOZX/P9oms4xsjt
     }
 
     // Query data từ database
-    // ...
+    const account = await accountModel.getAccountByAccountNumber(data.desAccountNumber);
+    if(!account){
+        return res.status(400).send({
+            status: -4,
+            msg: 'Tài khoản không tồn tại.'
+        });
+    }
 
-    console.log(data)
     return res.send({
-        desAccountNumber: data.desAccountNumber,
-        desAccountName: 'Le Minh Duc'
+        desAccountNumber: account.accountNumber,
+        desAccountName: account.accountName
     });
 });
 
 router.post('/payment-on-account', async (req, res) => {
     // INPUT
-    // headers: x_hashed_data
     // const data = {
     //     srcAccountNumber:'987654321',
     //     srcBankCode,
-    //     desAccountNumber: '123456789',
+    //     desAccountNumber: '1111000000001',
     //     desBankCode,
     //     money,
     //     content,
     //     iat: commonMethod.getIssuedAtNow()
     // }
+    // headers: x_hashed_data
     // body: encrypted_data, signed_data
 
 
@@ -136,19 +144,19 @@ router.post('/payment-on-account', async (req, res) => {
 Version: OpenPGP.js v4.10.4
 Comment: https://openpgpjs.org
 
-wcBMA3+LEt36YyzmAQf/R84L0kphIUkYpj8bNwrN39Kga5CGusDj7/nbH/jK
-JayDV0oYxRBUMQ/Zi+sXXwXREZBAg46BrjLWxO8tBQqXXA/Q/79BMPNpYhzP
-RBBRiNSQkKTHNOseGoDPxZ8CXDl560MKa1wZijoCFqyZtUVAUPQUmazoV2tf
-dOajcEeWbYV6fYCsFacKIR6B1UKV3kInJXjXfrlMZUsdmBWFwuHeFQHEGoKB
-buHfsoiv3uaJ5iI99DxDkFS7jJ26TimnvhsHzAKaX8v7BkJDmJpFO2tL9aQq
-pz7eNQbh3MNOTAWhNRuzZ7WxG5mjC2/DX9oCAa9y030qVxXqPehZtj0uqa66
-AdLAIwFu1qMSOBubPPS0UOg/fmlCpQ1YRkwjd520eKMiEfhqEv5pzJ/WH0Tq
-ww+3KtviSnGbcdYvSwthjddL9nxkxzhuY8yI2GXxiOTLerSqwr6++79LYt1j
-+uYYrd5zxT7IerB01QpNmMUHz/JzCZsQdaHAIImpfgrQQC9edHDZcNnvzxnV
-NMeqmbDtgpnD6IDITRURViZ+pKpDPgBjyXt0jA4OnAeprTBJ/6P1/44qL40c
-Yw7gA1EkxCMEmYnGBHtBQlLAECsvPjALBdADUxox7RJuDcAeGaKlYxu+MLFW
-7LDhgR3M
-=T5MV
+wcBMA3+LEt36YyzmAQf/XgJdghViG7IBF5C15JPVj41anv7cMjFk/6Bm2WqF
+BHbxNqyJQmU4WXcDRfZLaeWmDH1Ww+N1CBwdovLVsCnsCVwDyIjdwdBiPDWJ
+I8F4GcF51ptaJTIi4jBx3AiLoJxojHh0P2hgLPn7BPKvZGYxTvjmjdJMYgzv
+lCxIOGFDEQhiuhFXVx2QUblnjfD5mKWuniQvj0iZ+qHFFXS9n1zOmrWqmzje
+kOVxKmRbP1+QYrAzlKfp8mNiQj5EfsLMST4gCGbcgE6GevbFta3ie0hL9bWw
+s/3UYV9UGlK2llhfX8E8ssJ14MAYKWN1RHNTXALuYhdrhPwev7keMOfYH3jh
+edLAKgFK9u/qzzjpyOP1fo/XhBD7A9EusNXMZrm4O/vRWpJbKwV4vu9hnCeU
+UP37ZJ+ViqV98x+WpyowmeHf69aalDIPbZrrloXrME0GdsBdRNXStMlHTVEj
+JUsk+5cPlJzFfz9lvejauqh+t0/CmYSP53LIF4lvGDv5j5hebAE9owFd5zpL
+lvxpLzJO/WMS1E0t7+ll4LOZ1VYL2pa4xo6bmlIIE/orxdCK/V2jdWtJS92Y
+vq7nsnphEl9GZC3fjwXh0eXX3zEe0NTDgc/8JJXo5MwgNqMdP8porXyFjdlt
+GJ+RBDlQxcgXHyHdUg==
+=KnpV
 -----END PGP MESSAGE-----`;
 
     const data = await checkValidityData(encryptedData);
@@ -163,19 +171,19 @@ Yw7gA1EkxCMEmYnGBHtBQlLAECsvPjALBdADUxox7RJuDcAeGaKlYxu+MLFW
     const signedData = `-----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA512
 
-{"srcAccountNumber":"987654321","srcBankCode":"KL_BANK","desAccountNumber":"123456789","desBankCode":"MD_BANK","money":10000000,"content":"Trả lương","iat":1590518769}
+{"srcAccountNumber":"987654321","srcBankCode":"KL_BANK","desAccountNumber":"1111000000001","desBankCode":"GROUP2Bank","money":10000000,"content":"Trả lương","iat":1593271537}
 -----BEGIN PGP SIGNATURE-----
 Version: OpenPGP.js v4.10.4
 Comment: https://openpgpjs.org
 
-wsBcBAEBCgAGBQJezWPxAAoJEIxnrBZcmHDWWJgIALIVhUZ0dOQXU1Q2tTDa
-hi+AfZpA6kENJBtX3+kP7cKcZ4+Ob6YLafW3aEJ+cIY+8WZoer9dthnZrd1/
-iGNZbwMJdqt6okMYrkRgbcPlLAKvv6M2eTNK9lMEws7wDkcNoElw/KYachaj
-0bX5TOIk7iHLdsgaeYJ8k3SkhVdnYhjA7pDd6h0QkAzZkSa2ptjy5GNichK5
-zHLM4O6wmQadfiF9sArDz6PbwLa5qh7YnPTJNYo0o9cgqgSXwo7a/3sbdIil
-As24qwztyNVdJO9kmy4T60V3e1e7VMmSZosXSrJO5k6Osqey6o5ohFkSdvz/
-l00/9sO2O9MXl6AIqpw128E=
-=Kt/o
+wsBcBAEBCgAGBQJe92TxAAoJEIxnrBZcmHDWR58H/AwOQusvc0v7iivNU68o
+OSlxfsi2AVEN4Yb/OuOtVsYtvnYDlU1d7qSnI7BMDQhpnUDaY9UeGHnPtXSd
+TuDkfwg+aSH9nmmTkRmxDKGfA0RbIAD64XR94cm0uCk1L4k4JQvoHnael1tx
+rJ36ITpENXliO4cyA6d4luKVibBnjBmv0mb/bOiwr2CsP9VACmzpCJkzZzTi
+R6rynozr/3Q7K/Xe1FOu6V8ot+BgjWHzFzv1AmyaIhf2vUwTy5FxX2TTrMo5
+cN+pgW8PXH+mBjXNtw2lsJYWBF9CEe96Ug06Nq+8a/gKtIpq7kwy1+xXXPU/
+z+BUNjcm0zQ+rQNskTGsxNA=
+=Nqy6
 -----END PGP SIGNATURE-----`;
     const verifiedData = await otherBankMethod.verified(signedData);
     if (!verifiedData) {
@@ -185,8 +193,17 @@ l00/9sO2O9MXl6AIqpw128E=
         });
     }
 
+    // // Query data từ database
+    // const account = await accountModel.getAccountByAccountNumber(data.desAccountNumber);
+    // if(!account){
+    //     return res.status(400).send({
+    //         status: -4,
+    //         msg: 'Tài khoản không tồn tại.'
+    //     });
+    // }
+
     // Thực hiện nạp tiền vào tài khoản đó
-    // ...
+    
 
     const result = {
         ...data,
@@ -212,15 +229,15 @@ l00/9sO2O9MXl6AIqpw128E=
 // Hàm để tạo các data tạm thời
 const generateKey = async () => {
     // const data = {
-    //     desAccountNumber: '123456789',
-    //     desBankCode: 'MD_BANK',
+    //     desAccountNumber: '1111000000001',
+    //     desBankCode: 'GROUP2Bank',
     //     iat: commonMethod.getIssuedAtNow()
     // }
     const data = {
         srcAccountNumber: '987654321',
         srcBankCode: 'KL_BANK',
-        desAccountNumber: '123456789',
-        desBankCode: 'MD_BANK',
+        desAccountNumber: '1111000000001',
+        desBankCode: 'GROUP2Bank',
         money: 10000000,
         content: 'Trả lương',
         iat: commonMethod.getIssuedAtNow()

@@ -1,12 +1,24 @@
 {
+    Accounts:[
+        {
+            accountNumber:'1111000000001',
+            accountName:'LE MINH DUC'
+        },
+        {
+            accountNumber:'1111000000002',
+            accountName:'VO LE NGUYEN THAO'
+        },
+    ]
     secretString: 'Internet-banking--group-2',
     API1 = {
         Name: "Truy vấn thông tin tài khoản của ngân hàng khác",
         Method: "POST",
-        URL: "https://staging-be-internet-banking.herokuapp.com/query-account-information",
+        URL: "https://api-server-internet-banking.herokuapp.com/other-banks/query-account-information",
         Input: {
             headers: "x_hashed_data: Là 1 jwt được tạo như (1)",
-            body: "encrypted_data: Được tạo như (2)"
+            body: {
+                encrypted_data: "Được tạo như (2)"
+            }
         },
         Output: { // Có 4 lạo sau
             1: res.status(401).send({
@@ -30,7 +42,7 @@
     API2 = {
         Name: "Nạp tiền vào tài khoản của ngân hàng khác",
         Method: "POST",
-        URL: "https://staging-be-internet-banking.herokuapp.com/payment-on-account",
+        URL: "https://api-server-internet-banking.herokuapp.com/other-banks/payment-on-account",
         Input: {
             headers: "x_hashed_data: Là 1 jwt được tạo như (3)",
             body: {
