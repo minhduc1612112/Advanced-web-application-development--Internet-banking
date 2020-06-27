@@ -3,7 +3,7 @@
     API1 = {
         Name: "Truy vấn thông tin tài khoản của ngân hàng khác",
         Method: "POST",
-        URL: "https://staging-be-internet-banking.herokuapp.com/query-account-information",
+        URL: "https://api-server-internet-banking.herokuapp.com/other-banks/query-account-information",
         Input: {
             headers: "x_hashed_data: Là 1 jwt được tạo như (1)",
             body: {
@@ -32,7 +32,7 @@
     API2 = {
         Name: "Nạp tiền vào tài khoản của ngân hàng khác",
         Method: "POST",
-        URL: "https://staging-be-internet-banking.herokuapp.com/payment-on-account",
+        URL: "https://api-server-internet-banking.herokuapp.com/other-banks/payment-on-account",
         Input: {
             headers: "x_hashed_data: Là 1 jwt được tạo như (3)",
             body: {
