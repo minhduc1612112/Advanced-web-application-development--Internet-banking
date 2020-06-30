@@ -7,6 +7,8 @@ const commonMethod = require('../common/common.methods');
 const otherBankMethod = require('./other-banks.methods');
 
 const key = require('../../variables/keys');
+const transactionsModel = require('../transactions/transactions.models');
+const transactionsModels = require('../transactions/transactions.models');
 
 const router = express.Router();
 
@@ -93,7 +95,7 @@ QQ==
 
     // Query data từ database
     const account = await accountModel.getAccountByAccountNumber(data.desAccountNumber);
-    if(!account){
+    if (!account) {
         return res.status(400).send({
             status: -4,
             msg: 'Tài khoản không tồn tại.'
@@ -193,17 +195,32 @@ z+BUNjcm0zQ+rQNskTGsxNA=
         });
     }
 
-    // // Query data từ database
-    // const account = await accountModel.getAccountByAccountNumber(data.desAccountNumber);
-    // if(!account){
-    //     return res.status(400).send({
-    //         status: -4,
-    //         msg: 'Tài khoản không tồn tại.'
-    //     });
-    // }
+    // Query tài khoản từ database
+    const account = await accountModel.getAccountByAccountNumber(data.desAccountNumber);
+    const desLatestTransaction = await transactionsModel.latestTransaction(data.desAccountNumber);
+    if (!account || !desLatestTransaction) {
+        return res.status(400).send({
+            status: -4,
+            msg: 'Tài khoản không tồn tại.'
+        });
+    }
 
     // Thực hiện nạp tiền vào tài khoản đó
-    
+    const transaction = {
+        ...data,
+        accountNumber: desLatestTransaction.accountNumber,
+        accountMoney: desLatestTransaction.accountMoney + data.money,
+        createdAt: commonMethod.getIssuedAtNow(),
+        datetime: commonMethod.getDatetimeNow(),
+        type: 1
+    }
+    const addTransaction = await transactionsModel.addTransaction(transaction);
+    if (!addTransaction) {
+        return res.status(400).send({
+            status: -5,
+            msg: 'Giao dịch không thành công, vui lòng thử lại.'
+        });
+    }
 
     const result = {
         ...data,
@@ -216,9 +233,6 @@ z+BUNjcm0zQ+rQNskTGsxNA=
     if (!resSignedData) {
         return res.status(400).send('Tạo chữ kí không thành công.');
     }
-
-    // Thực hiện thêm thông tin giao dịch vào databas
-    // ...
 
     return res.send({
         signedData: resSignedData,
