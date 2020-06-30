@@ -15,6 +15,9 @@ module.exports = {
     getAccountByAccountNumber: async (accountNumber) => await db.collection(COLLECTION).get({
         accountNumber
     }),
+    getAccountByEmail: async (email) => await db.collection(COLLECTION).get({
+        email
+    }),
     validPassword: async (_id, password) => {
         const account = await db.collection(COLLECTION).get({
             _id
@@ -52,6 +55,17 @@ module.exports = {
         const newValue = {
             $set: {
                 password: password
+            }
+        }
+        return await db.collection(COLLECTION).update(query, newValue);
+    },
+    updateOtpToken: async (_id, otpToken) => {
+        const query = {
+            _id: ObjectId(_id)
+        }
+        const newValue = {
+            $set: {
+                otpToken
             }
         }
         return await db.collection(COLLECTION).update(query, newValue);

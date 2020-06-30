@@ -50,13 +50,19 @@ exports.refreshToken = async (req, res) => {
     // Lấy refresh token từ body
     const refreshToken = req.body.refreshToken;
     if (!refreshToken) {
-        return res.status(400).send('Không tìm thấy refresh token.');
+        return res.send({
+            status: 400,
+            msg: 'Không tìm thấy refresh token.'
+        });
     }
 
     // Lấy access token từ header
     const accessTokenFromHeader = req.headers.x_authorization;
     if (!accessTokenFromHeader) {
-        return res.status(400).send('Không tìm thấy access token.');
+        return res.send({
+            status: 400,
+            msg: 'Không tìm thấy access token.'
+        });
     }
 
     const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET || jwtVariable.auth.accessTokenSecret;
@@ -65,7 +71,10 @@ exports.refreshToken = async (req, res) => {
     // Decode access token đó
     const decoded = await authMethod.decodeToken(accessTokenFromHeader, accessTokenSecret);
     if (!decoded) {
-        return res.status(400).send('Access token không hợp lệ.');
+        return res.send({
+            status: 400,
+            msg: 'Access token không hợp lệ.'
+        });
     }
 
     const _id = decoded.payload._id; // Lấy username từ payload
@@ -73,7 +82,10 @@ exports.refreshToken = async (req, res) => {
     // Kiểm tra refresh token có hợp lệ không (giống như token được lưu trong database)
     const verifyRefreshToken = await accountModel.verifyRefreshToken(_id, refreshToken);
     if (verifyRefreshToken === false) {
-        return res.status(400).send('Refresh token không hợp lệ.');
+        return res.send({
+            status: 400,
+            msg: 'Refresh token không hợp lệ.'
+        });
     }
 
     // Tạo access token mới
@@ -83,9 +95,13 @@ exports.refreshToken = async (req, res) => {
 
     const accessToken = await authMethod.generateToken(dataForAccessToken, accessTokenSecret, accessTokenLife);
     if (!accessToken) {
-        return res.status(401).send('Đăng nhập không thành công, vui lòng thử lại.');
+        return res.status(401).send({
+            status: 400,
+            msg: 'Tạo access token không thành công, vui lòng thử lại.'
+        });
     }
-    return res.status(200).json({
+    return res.json({
+        status: 200,
         accessToken
     })
 };
