@@ -94,7 +94,7 @@ exports.resetPassword = async (req, res) => {
     const otp = decodedOtpToken.payload.otp;
     const email = decodedOtpToken.payload.email;
 
-    if(email !== req.body.email){
+    if (email !== req.body.email) {
         return res.status(400).send('Email không hợp lệ.')
     }
 
@@ -108,4 +108,10 @@ exports.resetPassword = async (req, res) => {
         return res.status(400).send('Đặt lại mật khẩu không thành công, vui lòng thử lại.')
     }
     return res.send('Đặt lại mật khẩu thành công');
+}
+
+exports.getAccount = async (req, res) => {
+    const accountNumber = req.params.accountNumber;
+    const account = await accountModel.getAccountByAccountNumber(accountNumber);
+    res.send(account);
 }
