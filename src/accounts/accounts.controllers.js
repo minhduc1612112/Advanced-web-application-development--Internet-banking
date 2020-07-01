@@ -1,7 +1,5 @@
 const bcrypt = require('bcrypt');
 const nodemailer = require('nodemailer');
-const jwt = require('jsonwebtoken');
-const jwtDecode = require('jwt-decode');
 
 const otherVariable = require('../../variables/others');
 
@@ -28,25 +26,16 @@ exports.changePassword = async (req, res) => {
 
     const updatePassword = await accountModel.updatePassword(_id, hashPassword);
     if (!updatePassword) {
-        return res.send({
-            status: 400,
-            msg: 'Đặt lại mật khẩu không thành công, vui lòng thử lại.'
-        })
+        return res.status(400).send('Đặt lại mật khẩu không thành công, vui lòng thử lại.')
     }
-    res.send({
-        status: 200,
-        msg: 'Đặt lại mật khẩu thành công'
-    });
+    return res.send('Đặt lại mật khẩu thành công.');
 }
 
 exports.sendConfirmativeCode = async (req, res) => {
     let email = req.body.email;
     const account = await accountModel.getAccountByEmail(email);
     if (!account) {
-        return res.send({
-            status: 400,
-            msg: 'Tài khoản không tồn tại.'
-        })
+        return res.status(400).send('Tài khoản không tồn tại.')
     }
 
     const transporter = nodemailer.createTransport({
@@ -69,10 +58,7 @@ exports.sendConfirmativeCode = async (req, res) => {
     transporter.sendMail(mailOptions, async function (error, info) {
         if (error) {
             console.log(error);
-            return res.send({
-                status: 400,
-                msg: 'Có lỗi trong quá trình gửi mã xác nhận, vui lòng thử lại.'
-            })
+            return res.status(400).send('Có lỗi trong quá trình gửi mã xác nhận, vui lòng thử lại.')
         }
         console.log('Email sent: ' + info.response);
         const otpToken = await authMethod.generateToken({
@@ -82,16 +68,10 @@ exports.sendConfirmativeCode = async (req, res) => {
 
         const updateOtpToken = await accountModel.updateOtpToken(account._id, otpToken);
         if (!updateOtpToken) {
-            res.send({
-                status: 400,
-                msg: 'Có lỗi trong quá trình lưu mã xác nhận, vui lòng thử lại.'
-            });
+            res.status(400).send('Có lỗi trong quá trình lưu mã xác nhận, vui lòng thử lại.');
         }
 
-        res.send({
-            status: 200,
-            msg: 'Gửi mã xác thực thành công, vui lòng kiểm tra email để lấy mã xác thực'
-        });
+        res.send('Gửi mã xác thực thành công, vui lòng kiểm tra email để lấy mã xác thực');
     });
 }
 
@@ -105,38 +85,27 @@ exports.resetPassword = async (req, res) => {
 
     const account = await accountModel.getAccountByEmail(req.body.email);
     if (!account) {
-        return res.send({
-            status: 400,
-            msg: 'Tài khoản không tồn tại.'
-        })
+        return res.status(400).send('Tài khoản không tồn tại.')
     }
     const decodedOtpToken = await authMethod.verifyToken(account.otpToken, 'reset_password');
     if (!decodedOtpToken) {
-        return res.send({
-            status: 400,
-            msg: 'OTP đã hết hạn.'
-        })
+        return res.status(400).send('OTP đã hết hạn.')
     }
     const otp = decodedOtpToken.payload.otp;
     const email = decodedOtpToken.payload.email;
 
-    if (otp !== req.body.otp) {
-        return res.send({
-            status: 400,
-            msg: 'OTP không hợp lệ.'
-        })
+    if(email !== req.body.email){
+        return res.status(400).send('Email không hợp lệ.')
     }
 
-    const hashPassword = bcrypt.hashSync(req.body.password, SALT_ROUNDS);
-    const updatePassword = await userModel.updatePassword(username, hashPassword);
-    if (!updatePassword) {
-        return res.send({
-            status: 400,
-            msg: 'Đặt lại mật khẩu không thành công, vui lòng thử lại.'
-        })
+    if (otp !== req.body.otp) {
+        return res.status(400).send('OTP không hợp lệ.')
     }
-    res.send({
-        status: 200,
-        msg: 'Đặt lại mật khẩu thành công'
-    });
+
+    const hashPassword = bcrypt.hashSync(req.body.password, otherVariable.SALT_ROUNDS);
+    const updatePassword = await accountModel.updatePassword(account._id, hashPassword);
+    if (!updatePassword) {
+        return res.status(400).send('Đặt lại mật khẩu không thành công, vui lòng thử lại.')
+    }
+    return res.send('Đặt lại mật khẩu thành công');
 }
