@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
 const nodemailer = require('nodemailer');
+const uuid = require('uuidv1');
 
 const otherVariable = require('../../variables/others');
 
@@ -116,8 +117,16 @@ exports.getAccount = async (req, res) => {
     res.send(account);
 }
 
+exports.getReceivers = async (req, res) => {
+    if (!req.account.receivers) {
+        return res.send([]);
+    }
+    return res.send(req.account.receivers);
+}
+
 exports.addReceiver = async (req, res) => {
     const receiver = {
+        _id: uuid(),
         accountNumber: req.body.accountNumber,
         accountName: req.body.accountName,
         accountNameReminiscent: req.body.accountNameReminiscent
@@ -138,7 +147,7 @@ exports.addReceiver = async (req, res) => {
         if (accountNumbers.includes(req.body.accountNumber)) {
             return res.status(400).send('Tài khoản này đã nằm trong danh sách người nhận.');
         }
-        receivers = account.receivers.concat([receiver]);
+        receivers = [...req.account.receivers, receiver];
     } else {
         receivers = [receiver];
     }
@@ -148,4 +157,20 @@ exports.addReceiver = async (req, res) => {
         return res.status(400).send('Có lỗi trong quá trình cập nhật danh sách người nhận, vui lòng thử lại.');
     }
     return res.send(receiver);
+}
+
+exports.deleteReceivers = async (req, res) => {
+    const receiverIDs = req.body.receiverIDs;
+    
+    const newReceivers = [];
+    req.account.receivers.map(i=>{
+        if(!receiverIDs.includes(i._id)){
+            newReceivers.push(i);
+        }
+    })
+    const updateReceivers = await accountModel.updateReceivers(req.account._id, newReceivers);
+    if (!updateReceivers) {
+        return res.status(400).send('Có lỗi trong quá trình cập nhật danh sách người nhận, vui lòng thử lại.');
+    }
+    return res.send(req.account.receivers);
 }
