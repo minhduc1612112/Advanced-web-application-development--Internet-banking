@@ -11,5 +11,6 @@ router.post('/change-password', isAuth, accountController.changePassword);
 router.post('/send-confirmative-code', accountController.sendConfirmativeCode);
 router.post('/reset-password', accountController.resetPassword);
 router.get('/:accountNumber', isAuth, accountController.getAccount);
+router.post('/receivers', isAuth, accountController.addReceiver);
 
 module.exports = router;

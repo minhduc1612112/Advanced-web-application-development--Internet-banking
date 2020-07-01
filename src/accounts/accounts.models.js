@@ -69,5 +69,16 @@ module.exports = {
             }
         }
         return await db.collection(COLLECTION).update(query, newValue);
+    },
+    updateReceivers: async (_id, receivers) => {
+        const query = {
+            _id: ObjectId(_id)
+        }
+        const newValue = {
+            $set: {
+                receivers
+            }
+        }
+        return await db.collection(COLLECTION).update(query, newValue);
     }
 }

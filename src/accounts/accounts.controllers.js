@@ -115,3 +115,37 @@ exports.getAccount = async (req, res) => {
     const account = await accountModel.getAccountByAccountNumber(accountNumber);
     res.send(account);
 }
+
+exports.addReceiver = async (req, res) => {
+    const receiver = {
+        accountNumber: req.body.accountNumber,
+        accountName: req.body.accountName,
+        accountNameReminiscent: req.body.accountNameReminiscent
+    }
+
+    if (req.body.accountNumber === req.account.accountNumber) {
+        return res.status(400).send('Tài khoản cần thêm phải khác tài khoản của bạn.');
+    }
+
+    const account = await accountModel.getAccountByAccountNumber(req.body.accountNumber);
+    if (!account) {
+        return res.status(400).send('Tài khoản này không tồn tại');
+    }
+
+    let receivers = [];
+    if (req.account.receivers) {
+        const accountNumbers = req.account.receivers.map(i => i.accountNumber);
+        if (accountNumbers.includes(req.body.accountNumber)) {
+            return res.status(400).send('Tài khoản này đã nằm trong danh sách người nhận.');
+        }
+        receivers = account.receivers.concat([receiver]);
+    } else {
+        receivers = [receiver];
+    }
+
+    const updateReceivers = await accountModel.updateReceivers(req.account._id, receivers);
+    if (!updateReceivers) {
+        return res.status(400).send('Có lỗi trong quá trình cập nhật danh sách người nhận, vui lòng thử lại.');
+    }
+    return res.send(receiver);
+}
