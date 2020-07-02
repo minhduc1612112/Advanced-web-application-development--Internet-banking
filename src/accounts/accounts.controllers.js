@@ -161,10 +161,10 @@ exports.addReceiver = async (req, res) => {
 
 exports.deleteReceivers = async (req, res) => {
     const receiverIDs = req.body.receiverIDs;
-    
+
     const newReceivers = [];
-    req.account.receivers.map(i=>{
-        if(!receiverIDs.includes(i._id)){
+    req.account.receivers.map(i => {
+        if (!receiverIDs.includes(i._id)) {
             newReceivers.push(i);
         }
     })
