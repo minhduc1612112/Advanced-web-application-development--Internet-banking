@@ -1,8 +1,8 @@
-const ObjectId = require('mongodb').ObjectId;
+const ObjectId = require("mongodb").ObjectId;
 
-const db = require('../../config/dbs');
+const db = require("../../config/dbs");
 
-const COLLECTION = 'Transactions';
+const COLLECTION = "Transactions";
 
 module.exports = {
     detail: async (_id) => {
@@ -10,7 +10,7 @@ module.exports = {
     },
     latestTransaction: async (accountNumber) => {
         const query = {
-            accountNumber:accountNumber
+            accountNumber: accountNumber,
         };
         const transactions = await db.collection(COLLECTION).list(query);
         let index = 0;
@@ -25,6 +25,8 @@ module.exports = {
     },
     addTransaction: async (transaction) => {
         return await db.collection(COLLECTION).add(transaction);
-    }
-
-}
+    },
+    addManyTransactions: async (transactions) => {
+        return await db.collection(COLLECTION).addMany(transactions);
+    },
+};

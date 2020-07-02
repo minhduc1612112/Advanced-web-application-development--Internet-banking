@@ -63,6 +63,15 @@ module.exports.collection = (COLLECTION) => {
                 return false;
             }
         },
+        addMany: async (items) => {
+            try {
+                await db.collection(COLLECTION).insertMany(items);
+                return true;
+            } catch (error) {
+                console.log("Error in adding item: " + error.message);
+                return false;
+            }
+        },
         delete: async (query) => {
             try {
                 await db.collection(COLLECTION).deleteMany(query);

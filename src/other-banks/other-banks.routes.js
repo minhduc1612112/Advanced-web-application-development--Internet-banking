@@ -1,58 +1,60 @@
-const express = require('express');
-const openpgp = require('openpgp');
+const express = require("express");
+const openpgp = require("openpgp");
 
-const accountModel = require('../accounts/accounts.models');
+const accountModel = require("../accounts/accounts.models");
 
-const commonMethod = require('../common/common.methods');
-const otherBankMethod = require('./other-banks.methods');
+const commonMethod = require("../common/common.methods");
+const otherBankMethod = require("./other-banks.methods");
 
-const key = require('../../variables/keys');
-const transactionsModel = require('../transactions/transactions.models');
-const transactionsModels = require('../transactions/transactions.models');
+const key = require("../../variables/keys");
+const transactionModle = require("../transactions/transactions.models");
 
 const router = express.Router();
 
 const checkValidityPartner = async (xHashedData) => {
-    const decodedHashedData = await commonMethod.verifyToken(xHashedData, key.secretString);
-    if (!decodedHashedData) {
-        return null;
-    }
-    return decodedHashedData;
-}
+  const decodedHashedData = await commonMethod.verifyToken(
+    xHashedData,
+    key.secretString
+  );
+  if (!decodedHashedData) {
+    return null;
+  }
+  return decodedHashedData;
+};
 
 const checkValidityTime = (decodedHashedData) => {
-    const iatNow = commonMethod.getIssuedAtNow();
-    const {
-        iat
-    } = decodedHashedData.payload;
-    // if (iatNow - iat > key.validityTime) {
-    //     return false;
-    // }
-    return true;
-}
+  const iatNow = commonMethod.getIssuedAtNow();
+  const {
+    iat
+  } = decodedHashedData.payload;
+  // if (iatNow - iat > key.validityTime) {
+  //     return false;
+  // }
+  return true;
+};
 
 const checkValidityData = async (encryptedData) => {
-    const decryptedData = await otherBankMethod.decrypted(encryptedData);
-    if (!decryptedData) {
-        return null;
-    }
-    const data = JSON.parse(decryptedData);
-    return data;
-}
+  const decryptedData = await otherBankMethod.decrypted(encryptedData);
+  if (!decryptedData) {
+    return null;
+  }
+  const data = JSON.parse(decryptedData);
+  return data;
+};
 
-router.post('/query-account-information', async (req, res) => {
-    // INPUT
-    // const data = {
-    //     desAccountNumber: '1111000000001',
-    //     desBankCode: 'GROUP2Bank',
-    //     iat: commonMethod.getIssuedAtNow()
-    // }
-    // headers: x_hashed_data
-    // body: encrypted_data
+router.post("/query-account-information", async (req, res) => {
+  // INPUT
+  // const data = {
+  //     desAccountNumber: '1111000000001',
+  //     desBankCode: 'GROUP2Bank',
+  //     iat: commonMethod.getIssuedAtNow()
+  // }
+  // headers: x_hashed_data
+  // body: encrypted_data
 
-    const xHashedData = req.headers.x_hashed_data;
-    // const encryptedData = req.body.encrypted_data;
-    const encryptedData = `-----BEGIN PGP MESSAGE-----
+  const xHashedData = req.headers.x_hashed_data;
+  // const encryptedData = req.body.encrypted_data;
+  const encryptedData = `-----BEGIN PGP MESSAGE-----
 Version: OpenPGP.js v4.10.4
 Comment: https://openpgpjs.org
 
@@ -69,80 +71,81 @@ QQ==
 =gVMh
 -----END PGP MESSAGE-----`;
 
-    const decodedHashedData = await checkValidityPartner(xHashedData);
-    if (!decodedHashedData) {
-        return res.status(401).send({
-            status: -1,
-            msg: 'Ngân hàng của bạn chưa được liên kết với ngân hàng này.'
-        });
-    }
-
-    const validityTime = checkValidityTime(decodedHashedData);
-    if (!validityTime) {
-        return res.status(400).send({
-            status: -2,
-            msg: 'Lời gọi này là thông tin cũ đã quá hạn.'
-        });
-    }
-
-    const data = await checkValidityData(encryptedData);
-    if (!data) {
-        return res.status(400).send({
-            status: -3,
-            msg: 'Lỗi bảo mật: Thông tin gói tin gửi đi đã bị chỉnh sửa, vui lòng không thực hiện giao dịch để đảm bảo an toàn.'
-        });
-    }
-
-    // Query data từ database
-    const account = await accountModel.getAccountByAccountNumber(data.desAccountNumber);
-    if (!account) {
-        return res.status(400).send({
-            status: -4,
-            msg: 'Tài khoản không tồn tại.'
-        });
-    }
-
-    return res.send({
-        desAccountNumber: account.accountNumber,
-        desAccountName: account.accountName
+  const decodedHashedData = await checkValidityPartner(xHashedData);
+  if (!decodedHashedData) {
+    return res.status(401).send({
+      status: -1,
+      msg: "Ngân hàng của bạn chưa được liên kết với ngân hàng này.",
     });
+  }
+
+  const validityTime = checkValidityTime(decodedHashedData);
+  if (!validityTime) {
+    return res.status(400).send({
+      status: -2,
+      msg: "Lời gọi này là thông tin cũ đã quá hạn.",
+    });
+  }
+
+  const data = await checkValidityData(encryptedData);
+  if (!data) {
+    return res.status(400).send({
+      status: -3,
+      msg: "Lỗi bảo mật: Thông tin gói tin gửi đi đã bị chỉnh sửa, vui lòng không thực hiện giao dịch để đảm bảo an toàn.",
+    });
+  }
+
+  // Query data từ database
+  const account = await accountModel.getAccountByAccountNumber(
+    data.desAccountNumber
+  );
+  if (!account) {
+    return res.status(400).send({
+      status: -4,
+      msg: "Tài khoản không tồn tại.",
+    });
+  }
+
+  return res.send({
+    desAccountNumber: account.accountNumber,
+    desAccountName: account.accountName,
+  });
 });
 
-router.post('/payment-on-account', async (req, res) => {
-    // INPUT
-    // const data = {
-    //     srcAccountNumber:'987654321',
-    //     srcBankCode,
-    //     desAccountNumber: '1111000000001',
-    //     desBankCode,
-    //     money,
-    //     content,
-    //     iat: commonMethod.getIssuedAtNow()
-    // }
-    // headers: x_hashed_data
-    // body: encrypted_data, signed_data
+router.post("/payment-on-account", async (req, res) => {
+  // INPUT
+  // const data = {
+  //     srcAccountNumber:'987654321',
+  //     srcBankCode,
+  //     desAccountNumber: '1111000000001',
+  //     desBankCode,
+  //     money,
+  //     content,
+  //     iat: commonMethod.getIssuedAtNow()
+  // }
+  // headers: x_hashed_data
+  // body: encrypted_data, signed_data
 
+  const xHashedData = req.headers.x_hashed_data;
 
-    const xHashedData = req.headers.x_hashed_data;
+  const decodedHashedData = await checkValidityPartner(xHashedData);
+  if (!decodedHashedData) {
+    return res.status(401).send({
+      status: -1,
+      msg: "Ngân hàng của bạn chưa được liên kết với ngân hàng này.",
+    });
+  }
 
-    const decodedHashedData = await checkValidityPartner(xHashedData);
-    if (!decodedHashedData) {
-        return res.status(401).send({
-            status: -1,
-            msg: 'Ngân hàng của bạn chưa được liên kết với ngân hàng này.'
-        });
-    }
+  const validityTime = checkValidityTime(decodedHashedData);
+  if (!validityTime) {
+    return res.status(400).send({
+      status: -2,
+      msg: "Lời gọi này là thông tin cũ đã quá hạn.",
+    });
+  }
 
-    const validityTime = checkValidityTime(decodedHashedData);
-    if (!validityTime) {
-        return res.status(400).send({
-            status: -2,
-            msg: 'Lời gọi này là thông tin cũ đã quá hạn.'
-        });
-    }
-
-    // const encryptedData = req.body.encrypted_data;
-    const encryptedData = `-----BEGIN PGP MESSAGE-----
+  // const encryptedData = req.body.encrypted_data;
+  const encryptedData = `-----BEGIN PGP MESSAGE-----
 Version: OpenPGP.js v4.10.4
 Comment: https://openpgpjs.org
 
@@ -161,16 +164,16 @@ GJ+RBDlQxcgXHyHdUg==
 =KnpV
 -----END PGP MESSAGE-----`;
 
-    const data = await checkValidityData(encryptedData);
-    if (!data) {
-        return res.status(400).send({
-            status: -3,
-            msg: 'Lỗi bảo mật: Thông tin gói tin gửi đi đã bị chỉnh sửa, vui lòng không thực hiện giao dịch để đảm bảo an toàn.'
-        });
-    }
+  const data = await checkValidityData(encryptedData);
+  if (!data) {
+    return res.status(400).send({
+      status: -3,
+      msg: "Lỗi bảo mật: Thông tin gói tin gửi đi đã bị chỉnh sửa, vui lòng không thực hiện giao dịch để đảm bảo an toàn.",
+    });
+  }
 
-    // const signedData = req.body.signed_data;
-    const signedData = `-----BEGIN PGP SIGNED MESSAGE-----
+  // const signedData = req.body.signed_data;
+  const signedData = `-----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA512
 
 {"srcAccountNumber":"987654321","srcBankCode":"KL_BANK","desAccountNumber":"1111000000001","desBankCode":"GROUP2Bank","money":10000000,"content":"Trả lương","iat":1593271537}
@@ -187,105 +190,112 @@ cN+pgW8PXH+mBjXNtw2lsJYWBF9CEe96Ug06Nq+8a/gKtIpq7kwy1+xXXPU/
 z+BUNjcm0zQ+rQNskTGsxNA=
 =Nqy6
 -----END PGP SIGNATURE-----`;
-    const verifiedData = await otherBankMethod.verified(signedData);
-    if (!verifiedData) {
-        return res.status(400).send({
-            status: -4,
-            msg: 'Chữ kí không hợp lệ.'
-        });
-    }
-
-    // Query tài khoản từ database
-    const account = await accountModel.getAccountByAccountNumber(data.desAccountNumber);
-    const desLatestTransaction = await transactionsModel.latestTransaction(data.desAccountNumber);
-    if (!account || !desLatestTransaction) {
-        return res.status(400).send({
-            status: -4,
-            msg: 'Tài khoản không tồn tại.'
-        });
-    }
-
-    // Thực hiện nạp tiền vào tài khoản đó
-    const transaction = {
-        ...data,
-        accountNumber: desLatestTransaction.accountNumber,
-        accountMoney: desLatestTransaction.accountMoney + data.money,
-        createdAt: commonMethod.getIssuedAtNow(),
-        datetime: commonMethod.getDatetimeNow(),
-        type: 1
-    }
-    const addTransaction = await transactionsModel.addTransaction(transaction);
-    if (!addTransaction) {
-        return res.status(400).send({
-            status: -5,
-            msg: 'Giao dịch không thành công, vui lòng thử lại.'
-        });
-    }
-
-    const result = {
-        ...data,
-        status: 200,
-        msg: `Giao dịch thành công.`
-    }
-    const dataForSign = JSON.stringify(result);
-    // Tạo chữ kí gửi lại cho B
-    const resSignedData = await otherBankMethod.signed(dataForSign);
-    if (!resSignedData) {
-        return res.status(400).send('Tạo chữ kí không thành công.');
-    }
-
-    return res.send({
-        signedData: resSignedData,
-        msg: 'Giao dịch thành công'
+  const verifiedData = await otherBankMethod.verified(signedData);
+  if (!verifiedData) {
+    return res.status(400).send({
+      status: -4,
+      msg: "Chữ kí không hợp lệ.",
     });
+  }
+
+  // Query tài khoản từ database
+  const account = await accountModel.getAccountByAccountNumber(
+    data.desAccountNumber
+  );
+  const desLatestTransaction = await transactionModle.latestTransaction(
+    data.desAccountNumber
+  );
+  if (!account || !desLatestTransaction) {
+    return res.status(400).send({
+      status: -5,
+      msg: "Tài khoản không tồn tại.",
+    });
+  }
+
+  // Thực hiện nạp tiền vào tài khoản đó
+  const transaction = {
+    ...data,
+    accountNumber: desLatestTransaction.accountNumber,
+    accountMoney: desLatestTransaction.accountMoney + data.money,
+    createdAt: commonMethod.getIssuedAtNow(),
+    datetime: commonMethod.getDatetimeNow(),
+    type: 'Nhận tiền từ tài khoản ngân hàng khác',
+  };
+  const addTransaction = await transactionModle.addTransaction(transaction);
+  if (!addTransaction) {
+    return res.status(400).send({
+      status: -6,
+      msg: "Giao dịch không thành công, vui lòng thử lại.",
+    });
+  }
+
+  const result = {
+    ...data,
+    status: 200,
+    msg: `Giao dịch thành công.`,
+  };
+  const dataForSign = JSON.stringify(result);
+  // Tạo chữ kí gửi lại cho B
+  const resSignedData = await otherBankMethod.signed(dataForSign);
+  if (!resSignedData) {
+    return res.status(400).send({
+      status: -7,
+      msg: "Tạo chữ kí không thành công.",
+    });
+  }
+
+  return res.send({
+    signedData: resSignedData,
+    msg: "Giao dịch thành công",
+  });
 });
 
 // Hàm để tạo các data tạm thời
 const generateKey = async () => {
-    // const data = {
-    //     desAccountNumber: '1111000000001',
-    //     desBankCode: 'GROUP2Bank',
-    //     iat: commonMethod.getIssuedAtNow()
-    // }
-    const data = {
-        srcAccountNumber: '987654321',
-        srcBankCode: 'KL_BANK',
-        desAccountNumber: '1111000000001',
-        desBankCode: 'GROUP2Bank',
-        money: 10000000,
-        content: 'Trả lương',
-        iat: commonMethod.getIssuedAtNow()
-    }
-    const dataString = JSON.stringify(data);
+  // const data = {
+  //     desAccountNumber: '1111000000001',
+  //     desBankCode: 'GROUP2Bank',
+  //     iat: commonMethod.getIssuedAtNow()
+  // }
+  const data = {
+    srcAccountNumber: "987654321",
+    srcBankCode: "KL_BANK",
+    desAccountNumber: "1111000000001",
+    desBankCode: "GROUP2Bank",
+    money: 10000000,
+    content: "Trả lương",
+    iat: commonMethod.getIssuedAtNow(),
+  };
+  const dataString = JSON.stringify(data);
 
-    // const xHashedData = await commonMethod.generateToken(data, key.secretString, '1y');
-    // console.log('Hashed data: ' + xHashedData);
+  // const xHashedData = await commonMethod.generateToken(data, key.secretString, '1y');
+  // console.log('Hashed data: ' + xHashedData);
 
-    // const encryptedData = await otherBankMethod.encrypted(dataString);
-    // console.log('Encrypted data: ' + encryptedData);
+  // const encryptedData = await otherBankMethod.encrypted(dataString);
+  // console.log('Encrypted data: ' + encryptedData);
 
-    // const signedData = await otherBankMethod.signed(dataString);
-    // console.log('Signed data: ' + signedData);
+  // const signedData = await otherBankMethod.signed(dataString);
+  // console.log('Signed data: ' + signedData);
 
-    //     const verifiedData = await otherBankMethod.verified(`-----BEGIN PGP SIGNED MESSAGE-----
-    // Hash: SHA512
+  //     const verifiedData = await otherBankMethod.verified(`-----BEGIN PGP SIGNED MESSAGE-----
+  // Hash: SHA512
 
-    // {"accountNumber":"123456789","iat":1590514817}
-    // -----BEGIN PGP SIGNATURE-----
-    // Version: OpenPGP.js v4.10.4
-    // Comment: https://openpgpjs.org
+  // {"accountNumber":"123456789","iat":1590514817}
+  // -----BEGIN PGP SIGNATURE-----
+  // Version: OpenPGP.js v4.10.4
+  // Comment: https://openpgpjs.org
 
-    // wsBcBAEBCgAGBQJezVSCAAoJEIxnrBZcmHDW9IAH/iywfeefF7deRsfBxSLl
-    // OwsF4UuReJZZ4Qs82rb/2tfk7TRQjR0RmGYOG2XWbeRTzZeqS3DPMd6wI9Zs
-    // tr7dB2OC7BI0UAVOVfNPgujMjbjrLqmFR3oaSGWLI4zL0wAth7I8nx42R2EG
-    // at4LNcPT2++jT9O1bQPftsR3WNioIBd2fYWzTDoOeRGJD8FqWSSl6haKjuv6
-    // D1V7WIBjwgkZP/8nWawPRSwJT0/pulZFdhflYA27PoiSOkpSse/x7PkKW/rr
-    // ETwlazBLJPoDEFOtUMMnQa/aGI53avR2z2FYTkinx1KJpeGWgnkJ3H9FBOol
-    // 56w+vUUa7Qp01gpxQJsfy5E=
-    // =mEJQ
-    // -----END PGP SIGNATURE-----`);
-    //     console.log(verifiedData);
-}
+  // wsBcBAEBCgAGBQJezVSCAAoJEIxnrBZcmHDW9IAH/iywfeefF7deRsfBxSLl
+  // OwsF4UuReJZZ4Qs82rb/2tfk7TRQjR0RmGYOG2XWbeRTzZeqS3DPMd6wI9Zs
+  // tr7dB2OC7BI0UAVOVfNPgujMjbjrLqmFR3oaSGWLI4zL0wAth7I8nx42R2EG
+  // at4LNcPT2++jT9O1bQPftsR3WNioIBd2fYWzTDoOeRGJD8FqWSSl6haKjuv6
+  // D1V7WIBjwgkZP/8nWawPRSwJT0/pulZFdhflYA27PoiSOkpSse/x7PkKW/rr
+  // ETwlazBLJPoDEFOtUMMnQa/aGI53avR2z2FYTkinx1KJpeGWgnkJ3H9FBOol
+  // 56w+vUUa7Qp01gpxQJsfy5E=
+  // =mEJQ
+  // -----END PGP SIGNATURE-----`);
+  //     console.log(verifiedData);
+};
 generateKey();
 
 module.exports = router;
