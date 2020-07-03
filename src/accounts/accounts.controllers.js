@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
 const nodemailer = require('nodemailer');
+const ObjectId = require('mongodb').ObjectId;
 
 const otherVariable = require('../../variables/others');
 
@@ -128,16 +129,22 @@ exports.addReceiver = async (req, res) => {
         return res.status(400).send('Tài khoản cần thêm phải khác tài khoản của bạn.');
     }
 
-    const account = await accountModel.getAccountByAccountNumber(req.body.accountNumber);
-    if (!account) {
-        return res.status(400).send('Tài khoản này không tồn tại');
-    }
-
     const receiver = {
-        _id: account._id.toString(),
         accountNumber: req.body.accountNumber,
         accountName: req.body.accountName,
         accountNameReminiscent: req.body.accountNameReminiscent
+    }
+
+
+    if (req.body.isAnotherBank) {
+        receiver.isAnotherBank = true;
+        receiver._id = ObjectId().toString();
+    } else {
+        const account = await accountModel.getAccountByAccountNumber(req.body.accountNumber);
+        if (!account) {
+            return res.status(400).send('Tài khoản này không tồn tại');
+        }
+        receiver._id = account._id.toString();
     }
 
     let receivers = [];
@@ -167,7 +174,7 @@ exports.deleteReceivers = async (req, res) => {
             newReceivers.push(i);
         }
     })
-    
+
     const updateReceivers = await accountModel.updateReceivers(req.account._id, newReceivers);
     if (!updateReceivers) {
         return res.status(400).send('Có lỗi trong quá trình cập nhật danh sách người nhận, vui lòng thử lại.');

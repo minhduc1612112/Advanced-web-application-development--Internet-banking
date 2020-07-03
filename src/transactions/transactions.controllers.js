@@ -160,14 +160,12 @@ exports.internalBankTransaction = async (req, res) => {
         type: "Nhận tiền từ tài khoản ngân hàng nội bộ",
     };
 
-    const addTransaction = await transactionModle.addTransaction([
+    const addManyTransactions = await transactionModle.addManyTransactions([
         srcTransaction,
         desTransaction,
     ]);
-    if (!addTransaction) {
-        return res
-            .status(400)
-            .send("Giao dịch không thành công, vui lòng thử lại.");
+    if (!addManyTransactions) {
+        return res.status(400).send("Giao dịch không thành công, vui lòng thử lại.");
     }
     return res.send({
         ...srcTransaction,
