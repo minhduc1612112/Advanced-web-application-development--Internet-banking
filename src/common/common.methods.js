@@ -52,3 +52,8 @@ exports.getIssuedAtNow = () => {
 exports.getDatetimeNow = () => {
     return momentTZ.tz('Asia/Bangkok').format('DD/MM/YYYY HH:mm:ss');
 }
+
+// Trả về ngày giờ hiện tại theo định dạng YYYY-MM-DD HH:mm:ss
+exports.getDatetimeNow1 = () => {
+    return momentTZ.tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss');
+}

@@ -1,13 +1,20 @@
 const nodemailer = require("nodemailer");
-const uuid = require("uuidv1");
+const ObjectId = require('mongodb').ObjectId;
+const axios = require('axios');
+const sha256 = require('sha256');
+const NodeRSA = require('node-rsa');
 
 const keyVariable = require("../../variables/keys");
+const anotherKey2Variable = require('../../variables/another-bank-keys-2');
 
 const transactionModle = require("./transactions.models");
 const accountModel = require("../accounts/accounts.models");
 
 const authMethod = require("../auth/auth.methods");
 const commonMethod = require("../common/common.methods");
+const {
+    partnerCode
+} = require("../../variables/another-bank-keys-2");
 
 exports.sendOTP = async (req, res) => {
     let email = req.account.email;
@@ -153,11 +160,11 @@ exports.internalBankTransaction = async (req, res) => {
         type: "Nhận tiền từ tài khoản ngân hàng nội bộ",
     };
 
-    const addManyTransactions = await transactionModle.addManyTransactions([
+    const addTransaction = await transactionModle.addTransaction([
         srcTransaction,
         desTransaction,
     ]);
-    if (!addManyTransactions) {
+    if (!addTransaction) {
         return res
             .status(400)
             .send("Giao dịch không thành công, vui lòng thử lại.");
@@ -167,3 +174,127 @@ exports.internalBankTransaction = async (req, res) => {
         desAccountName: desAccount.accountName
     });
 };
+
+exports.getInterbankAccount = async (req, res) => {
+    const accountNumber = req.params.accountNumber;
+
+    const timestamp = commonMethod.getDatetimeNow1();
+    const secretSign = anotherKey2Variable.secretSign;
+    const partnerCode = anotherKey2Variable.partnerCode;
+    const body = {
+        stk_thanh_toan: accountNumber
+    }
+    const sign = sha256(JSON.stringify(body) + timestamp + secretSign + partnerCode);
+
+    const {
+        data
+    } = await axios.post('https://smartbankinghk.herokuapp.com/api/foreign-bank/info', body, {
+        headers: {
+            'x-partner-code': partnerCode,
+            'x-timestamp': timestamp,
+            'x-sign': sign
+        }
+    });
+    if (data.status !== 1) {
+        return res.end();
+    }
+
+    const account = {
+        _id: ObjectId().toString(),
+        accountNumber,
+        accountName: data.ten
+    }
+    return res.send(account);
+}
+
+exports.interbankTransaction = async (req, res) => {
+    const account = req.account;
+    const decodedOtpToken = await authMethod.verifyToken(
+        account.otpToken,
+        "otp_transaction"
+    );
+
+    if (account.accountNumber === req.body.desAccountNumber) {
+        return res.status(400).send("Tài khoản nguồn không được giống tài khoản đích.");
+    }
+
+    if (!decodedOtpToken) {
+        return res.status(400).send("OTP đã hết hạn.");
+    }
+
+    const otp = decodedOtpToken.payload.otp;
+    const email = decodedOtpToken.payload.email;
+
+    if (email !== account.email) {
+        return res.status(400).send("Email không hợp lệ.");
+    }
+
+    if (otp !== req.body.otp) {
+        return res.status(400).send("OTP không hợp lệ.");
+    }
+
+    const formOfFeePayment = req.body.formOfFeePayment;
+
+    const srcLatestTransaction = await transactionModle.latestTransaction(
+        account.accountNumber
+    );
+
+    // const timestamp = commonMethod.getDatetimeNow1();
+    // const secretSign = anotherKey2Variable.secretSign;
+    // const partnerCode = anotherKey2Variable.partnerCode;
+    // const body = {
+    //     stk_nguoi_gui: account.accountName,
+    //     stk_thanh_toan: req.body.desAccountNumber,
+    //     soTien: req.body.money,
+    //     noi_dung: req.body.content
+    // }
+    // const sign = sha256(JSON.stringify(body) + timestamp + secretSign + partnerCode);
+
+    // const key = new NodeRSA(keyVariable.pgp.private);
+    // const rsaSign = key.sign(timestamp,'base64','utf8');
+
+    // const {
+    //     data
+    // } = await axios.post('https://smartbankinghk.herokuapp.com/api/foreign-bank/info', body, {
+    //     headers: {
+    //         'x-partner-code': partnerCode,
+    //         'x-timestamp': timestamp,
+    //         'x-sign': sign,
+    //         'x-rsa-sign':rsaSign
+    //     }
+    // });
+
+    let srcAccountMoney, srcDelta;
+    if (formOfFeePayment === 0) {
+        srcDelta = -parseInt(req.body.money) - 5000;
+        srcAccountMoney = srcLatestTransaction.accountMoney + srcDelta;
+    } else {
+        srcDelta = -parseInt(req.body.money);
+        srcAccountMoney = srcLatestTransaction.accountMoney + srcDelta;
+    }
+
+    const srcTransaction = {
+        srcAccountNumber: account.accountNumber,
+        srcBankCode: keyVariable.bankCode,
+        desAccountNumber: req.body.desAccountNumber,
+        desBankCode: "Interbank",
+        money: +req.body.money,
+        content: req.body.content,
+        iat: commonMethod.getIssuedAtNow(),
+        accountNumber: srcLatestTransaction.accountNumber,
+        accountMoney: srcAccountMoney,
+        delta: srcDelta,
+        createdAt: commonMethod.getIssuedAtNow(),
+        datetime: commonMethod.getDatetimeNow(),
+        type: "Chuyển tiền đến tài khoản ngân hàng khác",
+    };
+
+    const addTransaction = await transactionModle.addTransaction(srcTransaction);
+    if (!addTransaction) {
+        return res.status(400).send("Giao dịch không thành công, vui lòng thử lại.");
+    }
+    return res.send({
+        ...srcTransaction,
+        desAccountName: req.body.desAccountName
+    });
+}
