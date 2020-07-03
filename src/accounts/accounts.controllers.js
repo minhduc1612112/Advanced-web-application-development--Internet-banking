@@ -5,6 +5,7 @@ const ObjectId = require('mongodb').ObjectId;
 const otherVariable = require('../../variables/others');
 
 const accountModel = require('./accounts.models');
+const transactionModel = require('../transactions/transactions.models');
 
 const authMethod = require('../auth/auth.methods');
 
@@ -180,4 +181,21 @@ exports.deleteReceivers = async (req, res) => {
         return res.status(400).send('Có lỗi trong quá trình cập nhật danh sách người nhận, vui lòng thử lại.');
     }
     return res.send(req.account.receivers);
+}
+
+exports.getSavingAccounts = async (req, res) => {
+    return res.send(req.account.savingAccounts);
+}
+
+exports.getPaymentAccounts = async (req, res) => {
+    const latestTransaction = await transactionModel.latestTransaction(req.account.accountNumber);
+    let accountMoney = 0;
+    if (latestTransaction.accountMoney) {
+        accountMoney = latestTransaction.accountMoney;
+    }
+    return res.send([{
+        _id: req.account._id,
+        accountNumber: req.account.accountNumber,
+        accountMoney
+    }])
 }
