@@ -83,9 +83,9 @@ exports.refreshToken = async (req, res) => {
 
     const accessToken = await authMethod.generateToken(dataForAccessToken, accessTokenSecret, accessTokenLife);
     if (!accessToken) {
-        return res.status(401).send('Đăng nhập không thành công, vui lòng thử lại.');
+        return res.status(401).send('Tạo access token không thành công, vui lòng thử lại.');
     }
-    return res.status(200).json({
+    return res.json({
         accessToken
     })
 };

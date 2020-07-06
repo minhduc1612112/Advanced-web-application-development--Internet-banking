@@ -34,8 +34,7 @@ exports.initdb = initdb;
 
 module.exports.collection = (COLLECTION) => {
     return {
-        detail: 
-        async (_id) => {
+        detail: async (_id) => {
             const results = await db.collection(COLLECTION).find({
                     _id: ObjectId(_id)
                 })
@@ -58,6 +57,15 @@ module.exports.collection = (COLLECTION) => {
         add: async (item) => {
             try {
                 await db.collection(COLLECTION).insertOne(item);
+                return true;
+            } catch (error) {
+                console.log("Error in adding item: " + error.message);
+                return false;
+            }
+        },
+        addMany: async (items) => {
+            try {
+                await db.collection(COLLECTION).insertMany(items);
                 return true;
             } catch (error) {
                 console.log("Error in adding item: " + error.message);

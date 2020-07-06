@@ -1,9 +1,16 @@
 const express = require('express');
 const router = express.Router();
 
-/* GET home page. */
-router.get('/', function (req, res, next) {
-    res.send('APP IS RUNNING');
-});
+const {
+    isAuth
+} = require('../auth/auth.middlewares');
+
+const transactionController = require('./transactions.controllers');
+
+router.post('/send-otp', isAuth, transactionController.sendOTP);
+router.post('/internal-bank', isAuth, transactionController.internalBankTransaction);
+
+router.get('/interbank/accountNumber/:accountNumber', isAuth, transactionController.getInterbankAccount);
+router.post('/interbank', isAuth, transactionController.interbankTransaction);
 
 module.exports = router;
