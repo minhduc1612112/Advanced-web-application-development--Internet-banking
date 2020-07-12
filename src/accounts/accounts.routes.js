@@ -7,6 +7,8 @@ const {
 
 const accountController = require('./accounts.controllers');
 
+router.post('/', accountController.createAccount);
+
 router.post('/change-password', isAuth, accountController.changePassword);
 router.post('/send-confirmative-code', accountController.sendConfirmativeCode);
 router.post('/reset-password', accountController.resetPassword);

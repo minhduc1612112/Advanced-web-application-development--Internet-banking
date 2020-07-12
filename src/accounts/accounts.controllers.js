@@ -9,6 +9,40 @@ const transactionModel = require('../transactions/transactions.models');
 
 const authMethod = require('../auth/auth.methods');
 
+exports.createAccount = async (req, res) => {
+    const accounts = await accountModel.getAll();
+    const accountNumbers = account.map(i => parseInt(i.accountNumber));
+
+    const accountNumber = (Math.max(...accountNumbers) + 100).toString();
+    const accountName = req.body.accountName;
+    const email = req.body.email;
+    const username = email.split('@')[0];
+    const password = bcrypt.hashSync('12345', otherVariable.SALT_ROUNDS);
+
+    const account = {
+        username,
+        email,
+        password,
+        accountNumber,
+        accountName
+    }
+
+    const transaction = {
+        accountNumber,
+        accountMoney: 0,
+        createdAt: 0
+    }
+
+    const createAccount = await accountModel.addAccount(account);
+    const createTransaction = await transactionModel.addTransaction(transaction);
+
+    if (!createAccount || !createTransaction) {
+        return res.status(400).send('Có lỗi trong quá trình tạo tài khoản, vui lòng thử lại.');
+    }
+
+    return res.send(account);
+}
+
 exports.changePassword = async (req, res) => {
     const oldPassword = req.body.oldPassword,
         newPassword = req.body.newPassword;
