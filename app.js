@@ -9,6 +9,7 @@ const otherbankRouter = require('./src/other-banks/other-banks.routes');
 const accountRouter = require('./src/accounts/accounts.routes');
 const transactionRouter = require('./src/transactions/transactions.routes');
 const authRouter = require('./src/auth/auth.routes');
+const debtRemindersRouter = require('./src/debtReminders/debtReminders.routes');
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.use('/other-banks', otherbankRouter);
 app.use('/accounts', accountRouter);
 app.use('/transactions', transactionRouter);
 app.use('/auth', authRouter);
+app.use('/debt-reminders', debtRemindersRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
