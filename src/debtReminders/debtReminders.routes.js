@@ -11,11 +11,16 @@ const {
 
 const debtRemindersController = require('./debtReminders.controllers');
 
+// Bắt sự kiện thêm 1 nhắc nợ
 router.get('/debt-reminders-add-event', subscribeDebtRemindersAdded);
+
 router.route('/')
+    // Lấy danh sách nhắc nợ cho người tạo
     .get(isAuth, debtRemindersController.getCreatingDebtReminders)
+    // Tạo nhắc nợ
     .post(isAuth, debtRemindersController.createDebtReminders);
 
-router.get('/')
+// Lấy danh sách nhắc nợ cho người bị nhắc nợ
+router.get('/created-debt-reminders', isAuth, debtRemindersController.getCreatedDebtReminders);
 
 module.exports = router;
