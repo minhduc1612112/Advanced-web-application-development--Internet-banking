@@ -23,6 +23,13 @@ module.exports = {
         }
         return await db.collection(COLLECTION).list(query);
     },
+    getDebtRemindersByDesAccountNumberAndStatus: async (desAccountNumber, status) => {
+        const query = {
+            desAccountNumber: desAccountNumber,
+            status:status
+        }
+        return await db.collection(COLLECTION).list(query);
+    },
     addDebtReminders: async (debtReminders) => {
         return await db.collection(COLLECTION).add(debtReminders);
     },

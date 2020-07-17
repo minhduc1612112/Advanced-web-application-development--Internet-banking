@@ -20,7 +20,10 @@ router.route('/')
     // Tạo nhắc nợ
     .post(isAuth, debtRemindersController.createDebtReminders);
 
-// Lấy danh sách nhắc nợ cho người bị nhắc nợ
-router.get('/created-debt-reminders', isAuth, debtRemindersController.getCreatedDebtReminders);
+// Lấy danh sách nhắc nợ chưa thanh toán cho người bị nhắc nợ
+router.get('/unpaid-created-debt-reminders', isAuth, debtRemindersController.getUnPaidCreatedDebtReminders);
+
+// Lấy danh sách nhắc nợ đã thanh toán cho người bị nhắc nợ
+router.get('/paid-created-debt-reminders', isAuth, debtRemindersController.getPaidCreatedDebtReminders);
 
 module.exports = router;
