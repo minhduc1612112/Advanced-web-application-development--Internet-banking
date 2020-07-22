@@ -1,6 +1,9 @@
 const ObjectId = require('mongodb').ObjectId;
 
 const db = require('../../config/dbs');
+const {
+    query
+} = require('express');
 
 const COLLECTION = 'DebtReminders';
 
@@ -23,14 +26,27 @@ module.exports = {
         }
         return await db.collection(COLLECTION).list(query);
     },
-    getDebtRemindersByDesAccountNumberAndStatus: async (desAccountNumber, status) => {
+    getDebtRemindersByDesAccountNumberAndStatusNumber: async (desAccountNumber, statusNumber) => {
         const query = {
             desAccountNumber: desAccountNumber,
-            status:status
+            statusNumber: statusNumber
         }
         return await db.collection(COLLECTION).list(query);
     },
     addDebtReminders: async (debtReminders) => {
         return await db.collection(COLLECTION).add(debtReminders);
     },
+    updateStatusAndStatusNumberAndContent: async (_id, status, statusNumber, debtContent) => {
+        const query = {
+            _id: ObjectId(_id)
+        }
+        const value = {
+            $set: {
+                status: status,
+                statusNumber: statusNumber,
+                debtContent: debtContent
+            }
+        }
+        return await db.collection(COLLECTION).update(query, value);
+    }
 }
