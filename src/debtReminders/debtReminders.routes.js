@@ -8,7 +8,8 @@ const {
 const {
     subscribeDebtRemindersAdded,
     subscribeDebtRemindersRemoved,
-    subscribeCreatedDebtRemindersRemoved
+    subscribeCreatedDebtRemindersRemoved,
+    subscribeCreatedDebtRemindersPaymented
 } = require('./sse');
 
 const debtRemindersController = require('./debtReminders.controllers');
@@ -19,6 +20,10 @@ router.get('/debt-reminders-add-event', subscribeDebtRemindersAdded);
 router.get('/debt-reminders-remove-event', subscribeDebtRemindersRemoved);
 // Tạo sự kiện người nợ hủy 1 nhắc nợ
 router.get('/created-debt-reminders-remove-event', subscribeCreatedDebtRemindersRemoved);
+// Tạo sự kiện người nợ thanh toán 1 nhắc nợ
+router.get('/created-debt-reminders-payment-event', subscribeCreatedDebtRemindersPaymented);
+
+router.get('/detail/:_id', isAuth, debtRemindersController.detail);
 
 router.route('/')
     // Lấy danh sách nhắc nợ cho người tạo
@@ -36,5 +41,8 @@ router.get('/paid-created-debt-reminders', isAuth, debtRemindersController.getPa
 
 // Người nợ hủy nhắc nợ
 router.post('/remove-created-debt-reminders/:_id', isAuth, debtRemindersController.removeCreatedDebtReminders);
+
+// Người nợ thanh toán nhắc nợ
+router.post('/payment-created-debt-reminders/:_id', isAuth, debtRemindersController.paymentCreatedDebtReminders);
 
 module.exports = router;

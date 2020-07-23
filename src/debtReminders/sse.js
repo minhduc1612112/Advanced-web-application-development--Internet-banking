@@ -34,6 +34,7 @@ const subscribeEvent = (req, res, event) => {
 const DEBT_REMINDERS_ADDED = 'DEBT_REMINDERS_ADDED';
 const DEBT_REMINDERS_REMOVED = 'DEBT_REMINDERS_REMOVED';
 const CREATED_DEBT_REMINDERS_REMOVED = 'CREATED_DEBT_REMINDERS_REMOVED';
+const CREATED_DEBT_REMINDERS_PAYMENTED = 'CREATED_DEBT_REMINDERS_PAYMENTED';
 
 const subscribeDebtRemindersAdded = (req, res) => {
     subscribeEvent(req, res, DEBT_REMINDERS_ADDED);
@@ -56,11 +57,23 @@ const publishCreatedDebtRemindersRemoved = debtReminders => {
     emitter.emit(CREATED_DEBT_REMINDERS_REMOVED, debtReminders);
 }
 
+const subscribeCreatedDebtRemindersPaymented = (req, res) => {
+    subscribeEvent(req, res, CREATED_DEBT_REMINDERS_PAYMENTED);
+}
+const publishCreatedDebtRemindersPaymented = debtReminders => {
+    emitter.emit(CREATED_DEBT_REMINDERS_PAYMENTED, debtReminders);
+}
+
 module.exports = {
     subscribeDebtRemindersAdded,
     publishDebtRemindersAdded,
+
     subscribeDebtRemindersRemoved,
     publishDebtRemindersRemoved,
+
     subscribeCreatedDebtRemindersRemoved,
-    publishCreatedDebtRemindersRemoved
+    publishCreatedDebtRemindersRemoved,
+
+    subscribeCreatedDebtRemindersPaymented,
+    publishCreatedDebtRemindersPaymented
 }

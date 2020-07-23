@@ -141,6 +141,7 @@ exports.internalBankTransaction = async (req, res) => {
         delta: srcDelta,
         createdAt: commonMethod.getIssuedAtNow(),
         datetime: commonMethod.getDatetimeNow(),
+        typeNumber: 1,
         type: "Chuyển tiền đến tài khoản ngân hàng nội bộ",
     };
 
@@ -157,6 +158,7 @@ exports.internalBankTransaction = async (req, res) => {
         delta: desDelta,
         createdAt: commonMethod.getIssuedAtNow(),
         datetime: commonMethod.getDatetimeNow(),
+        typeNumber: 2,
         type: "Nhận tiền từ tài khoản ngân hàng nội bộ",
     };
 
