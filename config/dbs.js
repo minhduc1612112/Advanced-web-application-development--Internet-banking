@@ -51,6 +51,11 @@ module.exports.collection = (COLLECTION) => {
         list: async (query) => {
             return db.collection(COLLECTION).find(query).toArray();
         },
+        someLatest: async (limit) => {
+            return db.collection(COLLECTION).find({
+                '_id': -1
+            }).limit(limit).toArray();
+        },
         get: async (query) => {
             return db.collection(COLLECTION).findOne(query);
         },
