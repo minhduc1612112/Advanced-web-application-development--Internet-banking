@@ -1,9 +1,6 @@
 const ObjectId = require('mongodb').ObjectId;
 
 const db = require('../../config/dbs');
-const {
-    query
-} = require('express');
 
 const COLLECTION = 'DebtReminders';
 

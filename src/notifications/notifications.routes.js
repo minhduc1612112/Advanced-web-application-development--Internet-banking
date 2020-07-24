@@ -16,4 +16,6 @@ router.get('/new-notification-event', subscribeNewNotification);
 
 router.route('/').get(isAuth, notificationController.getNotifications);
 
+router.route('/read/:_id').post(isAuth, notificationController.readNotification);
+
 module.exports = router;

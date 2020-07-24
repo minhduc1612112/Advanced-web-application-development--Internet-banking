@@ -11,10 +11,24 @@ module.exports = {
     getAll: async () => {
         return await db.collection(COLLECTION).all();
     },
-    get10Latest:async () =>{
-        return await db.collection(COLLECTION).someLatest(10);
+    get10Latest: async (accountNumber) => {
+        const query = {
+            accountNumber:accountNumber
+        }
+        return await db.collection(COLLECTION).someLatest(query, 10);
     },
     addNotification: async (notification) => {
         return await db.collection(COLLECTION).add(notification);
     },
+    readNotification: async (_id) => {
+        const query = {
+            _id: ObjectId(_id)
+        }
+        const value = {
+            $set: {
+                isRead: true
+            }
+        }
+        return await db.collection(COLLECTION).update(query, value);
+    }
 }

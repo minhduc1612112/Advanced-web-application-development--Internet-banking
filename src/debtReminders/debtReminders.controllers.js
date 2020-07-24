@@ -3,6 +3,7 @@ const ObjectId = require('mongodb').ObjectId;
 const debtRemindersModel = require('./debtReminders.models');
 const accountModel = require('../accounts/accounts.models');
 const transactionModle = require('../transactions/transactions.models');
+const notificationModel = require('../notifications/notifications.models');
 
 const commonMethod = require('../common/common.methods');
 const authMethod = require('../auth/auth.methods');
@@ -15,6 +16,10 @@ const {
     publishCreatedDebtRemindersRemoved,
     publishCreatedDebtRemindersPaymented
 } = require('./sse');
+
+const {
+    publishNewNotification
+} = require('../notifications/sse');
 
 exports.detail = async (req, res) => {
     const _id = req.params._id;
@@ -69,6 +74,23 @@ exports.createDebtReminders = async (req, res) => {
     // sse
     publishDebtRemindersAdded(debtReminders);
 
+    // Tạo thông báo cho người được nhắc nợ
+    const notification = {
+        accountNumber: desAccount.accountNumber,
+        accountName: desAccount.accountName,
+        isRead: false,
+        content: 'Bạn có 1 nhắc nợ mới cần thanh toán',
+        createdAt: commonMethod.getIssuedAtNow(),
+        datetime: commonMethod.getDatetimeNow(),
+    }
+    const createNotification = await notificationModel.addNotification(notification);
+    if (!createNotification) {
+        return res.status(400).send('Tạo thông báo cho người được nhắc nợ không thành công.');
+    }
+    publishNewNotification({
+        status: true
+    })
+
     return res.status(201).send(debtReminders);
 }
 
@@ -94,6 +116,23 @@ exports.removeDebtReminders = async (req, res) => {
     publishDebtRemindersRemoved({
         _id
     });
+
+    // Tạo thông báo cho người được nhắc nợ
+    const notification = {
+        accountNumber: debtReminders.desAccountNumber,
+        accountName: debtReminders.desAccountName,
+        isRead: false,
+        content: 'Người nhắc nợ đã hủy 1 nhắc nợ của bạn',
+        createdAt: commonMethod.getIssuedAtNow(),
+        datetime: commonMethod.getDatetimeNow(),
+    }
+    const createNotification = await notificationModel.addNotification(notification);
+    if (!createNotification) {
+        return res.status(400).send('Tạo thông báo cho người được nhắc nợ không thành công.');
+    }
+    publishNewNotification({
+        status: true
+    })
 
     return res.send({
         ...debtReminders,
@@ -128,6 +167,23 @@ exports.removeCreatedDebtReminders = async (req, res) => {
         statusNumber: -1,
         status: 'Người nợ đã hủy'
     });
+
+    // Tạo thông báo cho người nhắc nợ
+    const notification = {
+        accountNumber: debtReminders.srcAccountNumber,
+        accountName: debtReminders.srcAccountNumber,
+        isRead: false,
+        content: 'Người nợ đã hủy 1 nhắc nợ của bạn',
+        createdAt: commonMethod.getIssuedAtNow(),
+        datetime: commonMethod.getDatetimeNow(),
+    }
+    const createNotification = await notificationModel.addNotification(notification);
+    if (!createNotification) {
+        return res.status(400).send('Tạo thông báo cho người được nhắc nợ không thành công.');
+    }
+    publishNewNotification({
+        status: true
+    })
 
     return res.send({
         _id
@@ -229,6 +285,23 @@ exports.paymentCreatedDebtReminders = async (req, res) => {
         statusNumber: 1,
         status: 'Người nợ đã trả'
     });
+
+    // Tạo thông báo cho người nhắc nợ
+    const notification = {
+        accountNumber: debtReminders.srcAccountNumber,
+        accountName: debtReminders.srcAccountNumber,
+        isRead: false,
+        content: 'Người nợ đã thanh toán 1 nhắc nợ của bạn',
+        createdAt: commonMethod.getIssuedAtNow(),
+        datetime: commonMethod.getDatetimeNow(),
+    }
+    const createNotification = await notificationModel.addNotification(notification);
+    if (!createNotification) {
+        return res.status(400).send('Tạo thông báo cho người được nhắc nợ không thành công.');
+    }
+    publishNewNotification({
+        status: true
+    })
 
     return res.send({
         transaction: {
