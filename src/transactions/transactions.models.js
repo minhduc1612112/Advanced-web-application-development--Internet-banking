@@ -23,6 +23,13 @@ module.exports = {
         }
         return transactions[index];
     },
+    transactionByAccountNumberAndTypeNumber: async (accountNumber, typeNumber) => {
+        const query = {
+            accountNumber,
+            typeNumber
+        }
+        return await db.collection(COLLECTION).list(query);
+    },
     addTransaction: async (transaction) => {
         return await db.collection(COLLECTION).add(transaction);
     },

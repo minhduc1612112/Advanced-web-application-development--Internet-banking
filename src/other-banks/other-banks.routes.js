@@ -219,6 +219,7 @@ z+BUNjcm0zQ+rQNskTGsxNA=
     accountMoney: desLatestTransaction.accountMoney + data.money,
     createdAt: commonMethod.getIssuedAtNow(),
     datetime: commonMethod.getDatetimeNow(),
+    typeNumber: 6,
     type: 'Nhận tiền từ tài khoản ngân hàng khác',
   };
   const addTransaction = await transactionModle.addTransaction(transaction);

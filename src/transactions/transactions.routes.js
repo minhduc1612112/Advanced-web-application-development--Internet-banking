@@ -13,4 +13,8 @@ router.post('/internal-bank', isAuth, transactionController.internalBankTransact
 router.get('/interbank/accountNumber/:accountNumber', isAuth, transactionController.getInterbankAccount);
 router.post('/interbank', isAuth, transactionController.interbankTransaction);
 
+router.get('/money-receiving',isAuth, transactionController.moneyReceivingTransaction);
+router.get('/money-sending',isAuth, transactionController.moneySendingTransaction);
+router.get('/payment-debt-reminders',isAuth, transactionController.paymentDebtReminders);
+
 module.exports = router;
