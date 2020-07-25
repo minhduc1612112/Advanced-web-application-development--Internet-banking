@@ -141,6 +141,7 @@ exports.internalBankTransaction = async (req, res) => {
         delta: srcDelta,
         createdAt: commonMethod.getIssuedAtNow(),
         datetime: commonMethod.getDatetimeNow(),
+        typeNumber: 1,
         type: "Chuyển tiền đến tài khoản ngân hàng nội bộ",
     };
 
@@ -157,6 +158,7 @@ exports.internalBankTransaction = async (req, res) => {
         delta: desDelta,
         createdAt: commonMethod.getIssuedAtNow(),
         datetime: commonMethod.getDatetimeNow(),
+        typeNumber: 2,
         type: "Nhận tiền từ tài khoản ngân hàng nội bộ",
     };
 
@@ -284,6 +286,7 @@ exports.interbankTransaction = async (req, res) => {
         delta: srcDelta,
         createdAt: commonMethod.getIssuedAtNow(),
         datetime: commonMethod.getDatetimeNow(),
+        typeNumber: 5,
         type: "Chuyển tiền đến tài khoản ngân hàng khác",
     };
 
@@ -295,4 +298,79 @@ exports.interbankTransaction = async (req, res) => {
         ...srcTransaction,
         desAccountName: req.body.desAccountName
     });
+}
+
+exports.moneyReceivingTransaction = async (req, res) => {
+    const accountNumber = req.account.accountNumber;
+
+    let data = [];
+
+    // Nhận tiền nội bộ
+    const internalTransactions = await transactionModle.transactionByAccountNumberAndTypeNumber(accountNumber, 2);
+    data = data.concat(internalTransactions);
+
+    // Nhận tiền thanh toán nhắc nợ
+    const debtRemindersTransactions = await transactionModle.transactionByAccountNumberAndTypeNumber(accountNumber, 4);
+    data = data.concat(debtRemindersTransactions);
+
+    // Nhận tiền từ tài khoản ngân hàng khác
+    const interbankTransactions = await transactionModle.transactionByAccountNumberAndTypeNumber(accountNumber, 6);
+    data = data.concat(interbankTransactions);
+
+    data = await Promise.all(data.map(async i => {
+        const srcAccount = await accountModel.getAccountByAccountNumber(i.srcAccountNumber);
+        const desAccount = await accountModel.getAccountByAccountNumber(i.desAccountNumber);
+        return {
+            ...i,
+            srcAccountName: srcAccount.accountName,
+            desAccountName: desAccount.accountName
+        }
+    }));
+
+    res.send(data);
+}
+
+exports.moneySendingTransaction = async (req, res) => {
+    const accountNumber = req.account.accountNumber;
+
+    let data = [];
+
+    // Chuyển tiền nội bộ
+    const internalTransactions = await transactionModle.transactionByAccountNumberAndTypeNumber(accountNumber, 1);
+    data = data.concat(internalTransactions);
+
+    // Chuyển tiền đến tài khoản ngân hàng khác
+    const interbankTransactions = await transactionModle.transactionByAccountNumberAndTypeNumber(accountNumber, 5);
+    data = data.concat(interbankTransactions);
+
+    data = await Promise.all(data.map(async i => {
+        const srcAccount = await accountModel.getAccountByAccountNumber(i.srcAccountNumber);
+        const desAccount = await accountModel.getAccountByAccountNumber(i.desAccountNumber);
+        return {
+            ...i,
+            srcAccountName: srcAccount.accountName,
+            desAccountName: desAccount.accountName
+        }
+    }));
+
+    res.send(data);
+}
+
+exports.paymentDebtReminders = async (req, res) => {
+    const accountNumber = req.account.accountNumber;
+
+    // Chuyển tiền thanh toán nhắc nợ
+    const debtRemindersTransactions = await transactionModle.transactionByAccountNumberAndTypeNumber(accountNumber, 3);
+
+    data = await Promise.all(debtRemindersTransactions.map(async i => {
+        const srcAccount = await accountModel.getAccountByAccountNumber(i.srcAccountNumber);
+        const desAccount = await accountModel.getAccountByAccountNumber(i.desAccountNumber);
+        return {
+            ...i,
+            srcAccountName: srcAccount.accountName,
+            desAccountName: desAccount.accountName
+        }
+    }));
+
+    res.send(data);
 }

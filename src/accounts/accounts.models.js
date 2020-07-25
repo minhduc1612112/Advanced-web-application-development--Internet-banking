@@ -6,8 +6,14 @@ const db = require('../../config/dbs');
 const COLLECTION = 'Accounts';
 
 module.exports = {
+    addAccount: async(account)=>{
+        return await db.collection(COLLECTION).add(account);
+    },
     detail: async (_id) => {
         return await db.collection(COLLECTION).detail(_id);
+    },
+    getAll: async ()=>{
+        return await db.collection(COLLECTION).all();
     },
     getAccount: async (username) => await db.collection(COLLECTION).get({
         username
