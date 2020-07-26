@@ -53,23 +53,23 @@ router.post("/query-account-information", async (req, res) => {
   // body: encrypted_data
 
   const xHashedData = req.headers.x_hashed_data;
-  // const encryptedData = req.body.encrypted_data;
-  const encryptedData = `-----BEGIN PGP MESSAGE-----
-Version: OpenPGP.js v4.10.4
-Comment: https://openpgpjs.org
+  const encryptedData = req.body.encrypted_data;
+//   const encryptedData = `-----BEGIN PGP MESSAGE-----
+// Version: OpenPGP.js v4.10.4
+// Comment: https://openpgpjs.org
 
-wcBMA3+LEt36YyzmAQf5AD8epp4FC3tUTRHXEJO1ZCV9+MfpNwuargmGqbsh
-X/h2Sih2hKAWbkStr1n3kX/LWfJ/awBcX292aPTMka/hgy9TUHz5thEq/bqx
-Qq/xLD5zVJZBDft+U+T+KrPlyvNBdefMTAKQAwY7mUlu7OCFmPwj8wtefoNL
-RgxHNIV4l2UHBXzOZZr+QjHsKuDx7EbbIJitXWqPcOCAO65wkGk7vjAfpsWy
-5PM3RHHUT25hW9QUY99OYC/mp5cOwSIzLkUcP77hx2quxqSJDHKk2hW7HL0Y
-2gIQ24ngNAmRgT6ZiAiYjG/BDeJzKNgjRhzGv+n0RwnJ5bGEFpCAOoXCp7B5
-WdKFAXmTypItUK7UdxtaTLiZJJM2dpmuxX2TuBA0U/U3v8eMVyZlZ3m8k+s1
-Tp+BlAstRGsM3HcCxLkp1Uvnfms6c4mUWxVe9+ZockTOsoVdm6XKR8kNg8Dv
-oIGLe03l4Ke7Mq4/VvIqdF7ULIRYNav7ysnwiXoapvA4Dx0y998RLpaKfsbK
-QQ==
-=gVMh
------END PGP MESSAGE-----`;
+// wcBMA3+LEt36YyzmAQf5AD8epp4FC3tUTRHXEJO1ZCV9+MfpNwuargmGqbsh
+// X/h2Sih2hKAWbkStr1n3kX/LWfJ/awBcX292aPTMka/hgy9TUHz5thEq/bqx
+// Qq/xLD5zVJZBDft+U+T+KrPlyvNBdefMTAKQAwY7mUlu7OCFmPwj8wtefoNL
+// RgxHNIV4l2UHBXzOZZr+QjHsKuDx7EbbIJitXWqPcOCAO65wkGk7vjAfpsWy
+// 5PM3RHHUT25hW9QUY99OYC/mp5cOwSIzLkUcP77hx2quxqSJDHKk2hW7HL0Y
+// 2gIQ24ngNAmRgT6ZiAiYjG/BDeJzKNgjRhzGv+n0RwnJ5bGEFpCAOoXCp7B5
+// WdKFAXmTypItUK7UdxtaTLiZJJM2dpmuxX2TuBA0U/U3v8eMVyZlZ3m8k+s1
+// Tp+BlAstRGsM3HcCxLkp1Uvnfms6c4mUWxVe9+ZockTOsoVdm6XKR8kNg8Dv
+// oIGLe03l4Ke7Mq4/VvIqdF7ULIRYNav7ysnwiXoapvA4Dx0y998RLpaKfsbK
+// QQ==
+// =gVMh
+// -----END PGP MESSAGE-----`;
 
   const decodedHashedData = await checkValidityPartner(xHashedData);
   if (!decodedHashedData) {
@@ -144,25 +144,25 @@ router.post("/payment-on-account", async (req, res) => {
     });
   }
 
-  // const encryptedData = req.body.encrypted_data;
-  const encryptedData = `-----BEGIN PGP MESSAGE-----
-Version: OpenPGP.js v4.10.4
-Comment: https://openpgpjs.org
+  const encryptedData = req.body.encrypted_data;
+//   const encryptedData = `-----BEGIN PGP MESSAGE-----
+// Version: OpenPGP.js v4.10.4
+// Comment: https://openpgpjs.org
 
-wcBMA3+LEt36YyzmAQf/XgJdghViG7IBF5C15JPVj41anv7cMjFk/6Bm2WqF
-BHbxNqyJQmU4WXcDRfZLaeWmDH1Ww+N1CBwdovLVsCnsCVwDyIjdwdBiPDWJ
-I8F4GcF51ptaJTIi4jBx3AiLoJxojHh0P2hgLPn7BPKvZGYxTvjmjdJMYgzv
-lCxIOGFDEQhiuhFXVx2QUblnjfD5mKWuniQvj0iZ+qHFFXS9n1zOmrWqmzje
-kOVxKmRbP1+QYrAzlKfp8mNiQj5EfsLMST4gCGbcgE6GevbFta3ie0hL9bWw
-s/3UYV9UGlK2llhfX8E8ssJ14MAYKWN1RHNTXALuYhdrhPwev7keMOfYH3jh
-edLAKgFK9u/qzzjpyOP1fo/XhBD7A9EusNXMZrm4O/vRWpJbKwV4vu9hnCeU
-UP37ZJ+ViqV98x+WpyowmeHf69aalDIPbZrrloXrME0GdsBdRNXStMlHTVEj
-JUsk+5cPlJzFfz9lvejauqh+t0/CmYSP53LIF4lvGDv5j5hebAE9owFd5zpL
-lvxpLzJO/WMS1E0t7+ll4LOZ1VYL2pa4xo6bmlIIE/orxdCK/V2jdWtJS92Y
-vq7nsnphEl9GZC3fjwXh0eXX3zEe0NTDgc/8JJXo5MwgNqMdP8porXyFjdlt
-GJ+RBDlQxcgXHyHdUg==
-=KnpV
------END PGP MESSAGE-----`;
+// wcBMA3+LEt36YyzmAQf/XgJdghViG7IBF5C15JPVj41anv7cMjFk/6Bm2WqF
+// BHbxNqyJQmU4WXcDRfZLaeWmDH1Ww+N1CBwdovLVsCnsCVwDyIjdwdBiPDWJ
+// I8F4GcF51ptaJTIi4jBx3AiLoJxojHh0P2hgLPn7BPKvZGYxTvjmjdJMYgzv
+// lCxIOGFDEQhiuhFXVx2QUblnjfD5mKWuniQvj0iZ+qHFFXS9n1zOmrWqmzje
+// kOVxKmRbP1+QYrAzlKfp8mNiQj5EfsLMST4gCGbcgE6GevbFta3ie0hL9bWw
+// s/3UYV9UGlK2llhfX8E8ssJ14MAYKWN1RHNTXALuYhdrhPwev7keMOfYH3jh
+// edLAKgFK9u/qzzjpyOP1fo/XhBD7A9EusNXMZrm4O/vRWpJbKwV4vu9hnCeU
+// UP37ZJ+ViqV98x+WpyowmeHf69aalDIPbZrrloXrME0GdsBdRNXStMlHTVEj
+// JUsk+5cPlJzFfz9lvejauqh+t0/CmYSP53LIF4lvGDv5j5hebAE9owFd5zpL
+// lvxpLzJO/WMS1E0t7+ll4LOZ1VYL2pa4xo6bmlIIE/orxdCK/V2jdWtJS92Y
+// vq7nsnphEl9GZC3fjwXh0eXX3zEe0NTDgc/8JJXo5MwgNqMdP8porXyFjdlt
+// GJ+RBDlQxcgXHyHdUg==
+// =KnpV
+// -----END PGP MESSAGE-----`;
 
   const data = await checkValidityData(encryptedData);
   if (!data) {
@@ -172,24 +172,25 @@ GJ+RBDlQxcgXHyHdUg==
     });
   }
 
-  // const signedData = req.body.signed_data;
-  const signedData = `-----BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA512
+  const signedData = req.body.signed_data;
+//   const signedData = `-----BEGIN PGP SIGNED MESSAGE-----
+// Hash: SHA512
 
-{"srcAccountNumber":"987654321","srcBankCode":"KL_BANK","desAccountNumber":"1111000000001","desBankCode":"GROUP2Bank","money":10000000,"content":"Trả lương","iat":1593271537}
------BEGIN PGP SIGNATURE-----
-Version: OpenPGP.js v4.10.4
-Comment: https://openpgpjs.org
+// {"srcAccountNumber":"987654321","srcBankCode":"KL_BANK","desAccountNumber":"1111000000001","desBankCode":"GROUP2Bank","money":10000000,"content":"Trả lương","iat":1593271537}
+// -----BEGIN PGP SIGNATURE-----
+// Version: OpenPGP.js v4.10.4
+// Comment: https://openpgpjs.org
 
-wsBcBAEBCgAGBQJe92TxAAoJEIxnrBZcmHDWR58H/AwOQusvc0v7iivNU68o
-OSlxfsi2AVEN4Yb/OuOtVsYtvnYDlU1d7qSnI7BMDQhpnUDaY9UeGHnPtXSd
-TuDkfwg+aSH9nmmTkRmxDKGfA0RbIAD64XR94cm0uCk1L4k4JQvoHnael1tx
-rJ36ITpENXliO4cyA6d4luKVibBnjBmv0mb/bOiwr2CsP9VACmzpCJkzZzTi
-R6rynozr/3Q7K/Xe1FOu6V8ot+BgjWHzFzv1AmyaIhf2vUwTy5FxX2TTrMo5
-cN+pgW8PXH+mBjXNtw2lsJYWBF9CEe96Ug06Nq+8a/gKtIpq7kwy1+xXXPU/
-z+BUNjcm0zQ+rQNskTGsxNA=
-=Nqy6
------END PGP SIGNATURE-----`;
+// wsBcBAEBCgAGBQJe92TxAAoJEIxnrBZcmHDWR58H/AwOQusvc0v7iivNU68o
+// OSlxfsi2AVEN4Yb/OuOtVsYtvnYDlU1d7qSnI7BMDQhpnUDaY9UeGHnPtXSd
+// TuDkfwg+aSH9nmmTkRmxDKGfA0RbIAD64XR94cm0uCk1L4k4JQvoHnael1tx
+// rJ36ITpENXliO4cyA6d4luKVibBnjBmv0mb/bOiwr2CsP9VACmzpCJkzZzTi
+// R6rynozr/3Q7K/Xe1FOu6V8ot+BgjWHzFzv1AmyaIhf2vUwTy5FxX2TTrMo5
+// cN+pgW8PXH+mBjXNtw2lsJYWBF9CEe96Ug06Nq+8a/gKtIpq7kwy1+xXXPU/
+// z+BUNjcm0zQ+rQNskTGsxNA=
+// =Nqy6
+// -----END PGP SIGNATURE-----`;
+
   const verifiedData = await otherBankMethod.verified(signedData);
   if (!verifiedData) {
     return res.status(400).send({
