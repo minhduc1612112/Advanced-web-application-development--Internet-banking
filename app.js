@@ -12,6 +12,7 @@ const authRouter = require('./src/auth/auth.routes');
 const debtRemindersRouter = require('./src/debtReminders/debtReminders.routes');
 const notificationRouter = require('./src/notifications/notifications.routes');
 const emplyeeRouter = require('./src/employees/employees.routes');
+const administratorRouter = require('./src/administrator/administrator.routes');
 
 const app = express();
 
@@ -30,6 +31,7 @@ app.use('/auth', authRouter);
 app.use('/debt-reminders', debtRemindersRouter);
 app.use('/notifications', notificationRouter);
 app.use('/employees', emplyeeRouter);
+app.use('/administrator', administratorRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

@@ -5,16 +5,13 @@ const sha256 = require('sha256');
 const NodeRSA = require('node-rsa');
 
 const keyVariable = require("../../variables/keys");
-const anotherKey2Variable = require('../../variables/another-bank-keys-2');
+const anotherKeyVariable = require('../../variables/another-bank-keys');
 
 const transactionModle = require("./transactions.models");
 const accountModel = require("../accounts/accounts.models");
 
 const authMethod = require("../auth/auth.methods");
 const commonMethod = require("../common/common.methods");
-const {
-    partnerCode
-} = require("../../variables/another-bank-keys-2");
 
 exports.sendOTP = async (req, res) => {
     let email = req.account.email;
@@ -175,12 +172,10 @@ exports.internalBankTransaction = async (req, res) => {
     });
 };
 
-exports.getInterbankAccount = async (req, res) => {
-    const accountNumber = req.params.accountNumber;
-
+exports.getInterbankAccountFunction = async (accountNumber) => {
     const timestamp = commonMethod.getDatetimeNow1();
-    const secretSign = anotherKey2Variable.secretSign;
-    const partnerCode = anotherKey2Variable.partnerCode;
+    const secretSign = anotherKeyVariable.secretSign;
+    const partnerCode = anotherKeyVariable.partnerCode;
     const body = {
         stk_thanh_toan: accountNumber
     }
@@ -196,13 +191,22 @@ exports.getInterbankAccount = async (req, res) => {
         }
     });
     if (data.status !== 1) {
-        return res.end();
+        return null;
     }
 
     const account = {
         _id: ObjectId().toString(),
         accountNumber,
         accountName: data.ten
+    }
+    return account;
+}
+
+exports.getInterbankAccount = async (req, res) => {
+    const accountNumber = req.params.accountNumber;
+    const account = await this.getInterbankAccountFunction(accountNumber);
+    if (!account) {
+        return res.end();
     }
     return res.send(account);
 }
@@ -240,8 +244,8 @@ exports.interbankTransaction = async (req, res) => {
     );
 
     // const timestamp = commonMethod.getDatetimeNow1();
-    // const secretSign = anotherKey2Variable.secretSign;
-    // const partnerCode = anotherKey2Variable.partnerCode;
+    // const secretSign = anotherKeyVariable.secretSign;
+    // const partnerCode = anotherKeyVariable.partnerCode;
     // const body = {
     //     stk_nguoi_gui: account.accountName,
     //     stk_thanh_toan: req.body.desAccountNumber,
@@ -307,25 +311,36 @@ exports.moneyReceivingTransaction = async (req, res) => {
 
     // Nhận tiền nội bộ
     const internalTransactions = await transactionModle.transactionByAccountNumberAndTypeNumber(accountNumber, 2);
+    await Promise.all(internalTransactions.map(async i => {
+        const srcAccount = await accountModel.getAccountByAccountNumber(i.srcAccountNumber);
+        const desAccount = await accountModel.getAccountByAccountNumber(i.desAccountNumber);
+
+        i.srcAccountName = srcAccount ? srcAccount.accountName : null;
+        i.desAccountName = desAccount ? desAccount.accountName : null;
+    }));
     data = data.concat(internalTransactions);
 
     // Nhận tiền thanh toán nhắc nợ
     const debtRemindersTransactions = await transactionModle.transactionByAccountNumberAndTypeNumber(accountNumber, 4);
+    await Promise.all(debtRemindersTransactions.map(async i => {
+        const srcAccount = await accountModel.getAccountByAccountNumber(i.srcAccountNumber);
+        const desAccount = await accountModel.getAccountByAccountNumber(i.desAccountNumber);
+
+        i.srcAccountName = srcAccount ? srcAccount.accountName : null;
+        i.desAccountName = desAccount ? desAccount.accountName : null;
+    }));
     data = data.concat(debtRemindersTransactions);
 
     // Nhận tiền từ tài khoản ngân hàng khác
     const interbankTransactions = await transactionModle.transactionByAccountNumberAndTypeNumber(accountNumber, 6);
-    data = data.concat(interbankTransactions);
-
-    data = await Promise.all(data.map(async i => {
-        const srcAccount = await accountModel.getAccountByAccountNumber(i.srcAccountNumber);
+    await Promise.all(interbankTransactions.map(async i => {
+        const srcAccount = await this.getInterbankAccountFunction(i.srcAccountNumber);
         const desAccount = await accountModel.getAccountByAccountNumber(i.desAccountNumber);
-        return {
-            ...i,
-            srcAccountName: srcAccount.accountName,
-            desAccountName: desAccount.accountName
-        }
-    }));
+
+        i.srcAccountName = srcAccount ? srcAccount.accountName : null;
+        i.desAccountName = desAccount ? desAccount.accountName : null;
+    }))
+    data = data.concat(interbankTransactions);
 
     res.send(data);
 }
@@ -336,22 +351,26 @@ exports.moneySendingTransaction = async (req, res) => {
     let data = [];
 
     // Chuyển tiền nội bộ
-    const internalTransactions = await transactionModle.transactionByAccountNumberAndTypeNumber(accountNumber, 1);
+    let internalTransactions = await transactionModle.transactionByAccountNumberAndTypeNumber(accountNumber, 1);
+    await Promise.all(internalTransactions.map(async i => {
+        const srcAccount = await accountModel.getAccountByAccountNumber(i.srcAccountNumber);
+        const desAccount = await accountModel.getAccountByAccountNumber(i.desAccountNumber);
+
+        i.srcAccountName = srcAccount ? srcAccount.accountName : null;
+        i.desAccountName = desAccount ? desAccount.accountName : null;
+    }));
     data = data.concat(internalTransactions);
 
     // Chuyển tiền đến tài khoản ngân hàng khác
     const interbankTransactions = await transactionModle.transactionByAccountNumberAndTypeNumber(accountNumber, 5);
-    data = data.concat(interbankTransactions);
-
-    data = await Promise.all(data.map(async i => {
+    await Promise.all(interbankTransactions.map(async i => {
         const srcAccount = await accountModel.getAccountByAccountNumber(i.srcAccountNumber);
-        const desAccount = await accountModel.getAccountByAccountNumber(i.desAccountNumber);
-        return {
-            ...i,
-            srcAccountName: srcAccount.accountName,
-            desAccountName: desAccount.accountName
-        }
-    }));
+        const desAccount = await this.getInterbankAccountFunction(i.desAccountNumber);
+
+        i.srcAccountName = srcAccount ? srcAccount.accountName : null;
+        i.desAccountName = desAccount ? desAccount.accountName : null;
+    }))
+    data = data.concat(interbankTransactions);
 
     res.send(data);
 }

@@ -30,6 +30,12 @@ module.exports = {
         }
         return await db.collection(COLLECTION).list(query);
     },
+    transactionByTypeNumber: async (typeNumber) => {
+        const query = {
+            typeNumber
+        }
+        return await db.collection(COLLECTION).list(query);
+    },
     addTransaction: async (transaction) => {
         return await db.collection(COLLECTION).add(transaction);
     },
