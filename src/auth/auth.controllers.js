@@ -31,7 +31,7 @@ exports.login = async (req, res) => {
 
     let refreshToken = randToken.generate(jwtVariable.auth.refreshTokenSize); // tạo 1 refresh token ngẫu nhiên
     if (!account.refreshToken) { // Nếu user này chưa có refresh token thì lưu refresh token đó vào database
-        await accountModel.updateRefreshToken(user._id, refreshToken);
+        await accountModel.updateRefreshToken(account._id, refreshToken);
     } else { // Nếu user này đã có refresh token thì lấy refresh token đó từ database
         refreshToken = account.refreshToken;
     }
