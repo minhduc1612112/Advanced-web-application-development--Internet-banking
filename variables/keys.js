@@ -60,6 +60,7 @@ YAu+G4QdJ5NBefsNN02TspwT2L0dlPORvktS79MjfZhyV4lCdkAApyUVnGuOxDYx
 8AWiab9Ql0r59iK4R18ZPdOrb7PGFg==
 =pD00
 -----END PGP PUBLIC KEY BLOCK-----`,
+
         private: `-----BEGIN PGP PRIVATE KEY BLOCK-----
 Version: Keybase OpenPGP v1.0.0
 Comment: https://keybase.io/crypto

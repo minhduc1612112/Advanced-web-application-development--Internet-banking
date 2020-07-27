@@ -3,11 +3,12 @@ const ObjectId = require('mongodb').ObjectId;
 const axios = require('axios');
 const sha256 = require('sha256');
 const NodeRSA = require('node-rsa');
+const momentTZ = require('moment-timezone');
 
 const keyVariable = require("../../variables/keys");
 const anotherKeyVariable = require('../../variables/another-bank-keys');
 
-const transactionModle = require("./transactions.models");
+const transactionModel = require("./transactions.models");
 const accountModel = require("../accounts/accounts.models");
 
 const authMethod = require("../auth/auth.methods");
@@ -97,7 +98,7 @@ exports.internalBankTransaction = async (req, res) => {
 
     const formOfFeePayment = req.body.formOfFeePayment;
 
-    const srcLatestTransaction = await transactionModle.latestTransaction(
+    const srcLatestTransaction = await transactionModel.latestTransaction(
         account.accountNumber
     );
 
@@ -108,7 +109,7 @@ exports.internalBankTransaction = async (req, res) => {
         return res.status(400).send("Tài khoản đích không tồn tại");
     }
 
-    const desLatestTransaction = await transactionModle.latestTransaction(
+    const desLatestTransaction = await transactionModel.latestTransaction(
         req.body.desAccountNumber
     );
 
@@ -159,7 +160,7 @@ exports.internalBankTransaction = async (req, res) => {
         type: "Nhận tiền từ tài khoản ngân hàng nội bộ",
     };
 
-    const addManyTransactions = await transactionModle.addManyTransactions([
+    const addManyTransactions = await transactionModel.addManyTransactions([
         srcTransaction,
         desTransaction,
     ]);
@@ -237,38 +238,42 @@ exports.interbankTransaction = async (req, res) => {
         return res.status(400).send("OTP không hợp lệ.");
     }
 
-    const formOfFeePayment = req.body.formOfFeePayment;
+    const timestamp = momentTZ.tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD HH:mm:ss');
+    const secretSign = anotherKeyVariable.secretSign;
+    const partnerCode = anotherKeyVariable.partnerCode;
+    const body = {
+        stk_nguoi_gui: account.accountName,
+        stk_thanh_toan: req.body.desAccountNumber,
+        soTien: req.body.money,
+        noi_dung: req.body.content
+    }
+    const sign = sha256(JSON.stringify(body) + timestamp + secretSign + partnerCode);
 
-    const srcLatestTransaction = await transactionModle.latestTransaction(
+    const key = new NodeRSA(anotherKeyVariable.rsa.privateKeyStr);
+    const rsaSign = key.sign(timestamp, 'base64', 'utf8');
+
+    const {
+        data
+    } = await axios.post('https://smartbankinghk.herokuapp.com/api/foreign-bank/info', body, {
+        headers: {
+            'x-partner-code': partnerCode,
+            'x-timestamp': timestamp,
+            'x-sign': sign,
+            'x-rsa-sign': rsaSign
+        }
+    });
+
+    if (data.status !== 1) {
+        return res.status(400).send("Chuyển tiền không thành công, vui lòng thử lại.");
+    }
+
+    const srcLatestTransaction = await transactionModel.latestTransaction(
         account.accountNumber
     );
 
-    // const timestamp = commonMethod.getDatetimeNow1();
-    // const secretSign = anotherKeyVariable.secretSign;
-    // const partnerCode = anotherKeyVariable.partnerCode;
-    // const body = {
-    //     stk_nguoi_gui: account.accountName,
-    //     stk_thanh_toan: req.body.desAccountNumber,
-    //     soTien: req.body.money,
-    //     noi_dung: req.body.content
-    // }
-    // const sign = sha256(JSON.stringify(body) + timestamp + secretSign + partnerCode);
-
-    // const key = new NodeRSA(keyVariable.pgp.private);
-    // const rsaSign = key.sign(timestamp,'base64','utf8');
-
-    // const {
-    //     data
-    // } = await axios.post('https://smartbankinghk.herokuapp.com/api/foreign-bank/info', body, {
-    //     headers: {
-    //         'x-partner-code': partnerCode,
-    //         'x-timestamp': timestamp,
-    //         'x-sign': sign,
-    //         'x-rsa-sign':rsaSign
-    //     }
-    // });
-
+    const formOfFeePayment = req.body.formOfFeePayment;
     let srcAccountMoney, srcDelta;
+    
     if (formOfFeePayment === 0) {
         srcDelta = -parseInt(req.body.money) - 5000;
         srcAccountMoney = srcLatestTransaction.accountMoney + srcDelta;
@@ -294,7 +299,7 @@ exports.interbankTransaction = async (req, res) => {
         type: "Chuyển tiền đến tài khoản ngân hàng khác",
     };
 
-    const addTransaction = await transactionModle.addTransaction(srcTransaction);
+    const addTransaction = await transactionModel.addTransaction(srcTransaction);
     if (!addTransaction) {
         return res.status(400).send("Giao dịch không thành công, vui lòng thử lại.");
     }
@@ -310,7 +315,7 @@ exports.moneyReceivingTransaction = async (req, res) => {
     let data = [];
 
     // Nhận tiền nội bộ
-    const internalTransactions = await transactionModle.transactionByAccountNumberAndTypeNumber(accountNumber, 2);
+    const internalTransactions = await transactionModel.transactionByAccountNumberAndTypeNumber(accountNumber, 2);
     await Promise.all(internalTransactions.map(async i => {
         const srcAccount = await accountModel.getAccountByAccountNumber(i.srcAccountNumber);
         const desAccount = await accountModel.getAccountByAccountNumber(i.desAccountNumber);
@@ -321,7 +326,7 @@ exports.moneyReceivingTransaction = async (req, res) => {
     data = data.concat(internalTransactions);
 
     // Nhận tiền thanh toán nhắc nợ
-    const debtRemindersTransactions = await transactionModle.transactionByAccountNumberAndTypeNumber(accountNumber, 4);
+    const debtRemindersTransactions = await transactionModel.transactionByAccountNumberAndTypeNumber(accountNumber, 4);
     await Promise.all(debtRemindersTransactions.map(async i => {
         const srcAccount = await accountModel.getAccountByAccountNumber(i.srcAccountNumber);
         const desAccount = await accountModel.getAccountByAccountNumber(i.desAccountNumber);
@@ -332,7 +337,7 @@ exports.moneyReceivingTransaction = async (req, res) => {
     data = data.concat(debtRemindersTransactions);
 
     // Nhận tiền từ tài khoản ngân hàng khác
-    const interbankTransactions = await transactionModle.transactionByAccountNumberAndTypeNumber(accountNumber, 6);
+    const interbankTransactions = await transactionModel.transactionByAccountNumberAndTypeNumber(accountNumber, 6);
     await Promise.all(interbankTransactions.map(async i => {
         const srcAccount = await this.getInterbankAccountFunction(i.srcAccountNumber);
         const desAccount = await accountModel.getAccountByAccountNumber(i.desAccountNumber);
@@ -351,7 +356,7 @@ exports.moneySendingTransaction = async (req, res) => {
     let data = [];
 
     // Chuyển tiền nội bộ
-    let internalTransactions = await transactionModle.transactionByAccountNumberAndTypeNumber(accountNumber, 1);
+    let internalTransactions = await transactionModel.transactionByAccountNumberAndTypeNumber(accountNumber, 1);
     await Promise.all(internalTransactions.map(async i => {
         const srcAccount = await accountModel.getAccountByAccountNumber(i.srcAccountNumber);
         const desAccount = await accountModel.getAccountByAccountNumber(i.desAccountNumber);
@@ -362,7 +367,7 @@ exports.moneySendingTransaction = async (req, res) => {
     data = data.concat(internalTransactions);
 
     // Chuyển tiền đến tài khoản ngân hàng khác
-    const interbankTransactions = await transactionModle.transactionByAccountNumberAndTypeNumber(accountNumber, 5);
+    const interbankTransactions = await transactionModel.transactionByAccountNumberAndTypeNumber(accountNumber, 5);
     await Promise.all(interbankTransactions.map(async i => {
         const srcAccount = await accountModel.getAccountByAccountNumber(i.srcAccountNumber);
         const desAccount = await this.getInterbankAccountFunction(i.desAccountNumber);
@@ -379,7 +384,7 @@ exports.paymentDebtReminders = async (req, res) => {
     const accountNumber = req.account.accountNumber;
 
     // Chuyển tiền thanh toán nhắc nợ
-    const debtRemindersTransactions = await transactionModle.transactionByAccountNumberAndTypeNumber(accountNumber, 3);
+    const debtRemindersTransactions = await transactionModel.transactionByAccountNumberAndTypeNumber(accountNumber, 3);
 
     data = await Promise.all(debtRemindersTransactions.map(async i => {
         const srcAccount = await accountModel.getAccountByAccountNumber(i.srcAccountNumber);
