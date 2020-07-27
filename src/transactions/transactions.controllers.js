@@ -3,6 +3,7 @@ const ObjectId = require('mongodb').ObjectId;
 const axios = require('axios');
 const sha256 = require('sha256');
 const NodeRSA = require('node-rsa');
+const momentTZ = require('moment-timezone');
 
 const keyVariable = require("../../variables/keys");
 const anotherKeyVariable = require('../../variables/another-bank-keys');
@@ -237,38 +238,42 @@ exports.interbankTransaction = async (req, res) => {
         return res.status(400).send("OTP không hợp lệ.");
     }
 
-    const formOfFeePayment = req.body.formOfFeePayment;
+    const timestamp = momentTZ.tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD HH:mm:ss');
+    const secretSign = anotherKeyVariable.secretSign;
+    const partnerCode = anotherKeyVariable.partnerCode;
+    const body = {
+        stk_nguoi_gui: account.accountName,
+        stk_thanh_toan: req.body.desAccountNumber,
+        soTien: req.body.money,
+        noi_dung: req.body.content
+    }
+    const sign = sha256(JSON.stringify(body) + timestamp + secretSign + partnerCode);
+
+    const key = new NodeRSA(anotherKeyVariable.rsa.privateKeyStr);
+    const rsaSign = key.sign(timestamp, 'base64', 'utf8');
+
+    const {
+        data
+    } = await axios.post('https://smartbankinghk.herokuapp.com/api/foreign-bank/info', body, {
+        headers: {
+            'x-partner-code': partnerCode,
+            'x-timestamp': timestamp,
+            'x-sign': sign,
+            'x-rsa-sign': rsaSign
+        }
+    });
+
+    if (data.status !== 1) {
+        return res.status(400).send("Chuyển tiền không thành công, vui lòng thử lại.");
+    }
 
     const srcLatestTransaction = await transactionModle.latestTransaction(
         account.accountNumber
     );
 
-    // const timestamp = commonMethod.getDatetimeNow1();
-    // const secretSign = anotherKeyVariable.secretSign;
-    // const partnerCode = anotherKeyVariable.partnerCode;
-    // const body = {
-    //     stk_nguoi_gui: account.accountName,
-    //     stk_thanh_toan: req.body.desAccountNumber,
-    //     soTien: req.body.money,
-    //     noi_dung: req.body.content
-    // }
-    // const sign = sha256(JSON.stringify(body) + timestamp + secretSign + partnerCode);
-
-    // const key = new NodeRSA(keyVariable.pgp.private);
-    // const rsaSign = key.sign(timestamp,'base64','utf8');
-
-    // const {
-    //     data
-    // } = await axios.post('https://smartbankinghk.herokuapp.com/api/foreign-bank/info', body, {
-    //     headers: {
-    //         'x-partner-code': partnerCode,
-    //         'x-timestamp': timestamp,
-    //         'x-sign': sign,
-    //         'x-rsa-sign':rsaSign
-    //     }
-    // });
-
+    const formOfFeePayment = req.body.formOfFeePayment;
     let srcAccountMoney, srcDelta;
+    
     if (formOfFeePayment === 0) {
         srcDelta = -parseInt(req.body.money) - 5000;
         srcAccountMoney = srcLatestTransaction.accountMoney + srcDelta;

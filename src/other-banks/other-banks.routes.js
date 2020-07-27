@@ -43,14 +43,20 @@ const checkValidityData = async (encryptedData) => {
 };
 
 router.post("/query-account-information", async (req, res) => {
-  // INPUT
   // const data = {
   //     desAccountNumber: '1111000000001',
   //     desBankCode: 'GROUP2Bank',
   //     iat: commonMethod.getIssuedAtNow()
   // }
+
   // headers: x_hashed_data
   // body: encrypted_data
+
+  // const xHashedData = await commonMethod.generateToken(data, key.secretString, '1y');
+  // console.log('Hashed data: ' + xHashedData);
+
+  // const encryptedData = await otherBankMethod.encrypted(dataString);
+  // console.log('Encrypted data: ' + encryptedData);
 
   const xHashedData = req.headers.x_hashed_data;
   const encryptedData = req.body.encrypted_data;
@@ -113,7 +119,6 @@ router.post("/query-account-information", async (req, res) => {
 });
 
 router.post("/payment-on-account", async (req, res) => {
-  // INPUT
   // const data = {
   //     srcAccountNumber:'987654321',
   //     srcBankCode,
@@ -123,8 +128,18 @@ router.post("/payment-on-account", async (req, res) => {
   //     content,
   //     iat: commonMethod.getIssuedAtNow()
   // }
+
   // headers: x_hashed_data
   // body: encrypted_data, signed_data
+
+  // const xHashedData = await commonMethod.generateToken(data, key.secretString, '1y');
+  // console.log('Hashed data: ' + xHashedData);
+
+  // const encryptedData = await otherBankMethod.encrypted(dataString);
+  // console.log('Encrypted data: ' + encryptedData);
+
+  // const signedData = await otherBankMethod.signed(dataString);
+  // console.log('Signed data: ' + signedData);
 
   const xHashedData = req.headers.x_hashed_data;
 
