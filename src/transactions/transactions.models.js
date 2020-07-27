@@ -36,6 +36,16 @@ module.exports = {
         }
         return await db.collection(COLLECTION).list(query);
     },
+    transactionByTypeNumberAndCreatedAt: async (typeNumber, from, to) => {
+        const query = {
+            typeNumber,
+            createdAt: {
+                $gte: from,
+                $lte: to
+            }
+        }
+        return await db.collection(COLLECTION).list(query);
+    },
     addTransaction: async (transaction) => {
         return await db.collection(COLLECTION).add(transaction);
     },

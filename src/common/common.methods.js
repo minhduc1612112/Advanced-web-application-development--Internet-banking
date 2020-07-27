@@ -1,4 +1,5 @@
 const momentTZ = require('moment-timezone');
+const moment = require('moment');
 const jwtDecode = require('jwt-decode');
 const jwt = require('jsonwebtoken');
 const promisify = require('util').promisify;
@@ -56,4 +57,12 @@ exports.getDatetimeNow = () => {
 // Trả về ngày giờ hiện tại theo định dạng YYYY-MM-DD HH:mm:ss
 exports.getDatetimeNow1 = () => {
     return momentTZ.tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss');
+}
+
+exports.convertDateToUNIX = (datetime) => {
+    try {
+        return moment(datetime, "YYYY-MM-DD HH:mm:ss").unix();
+    } catch (error) {
+        return null;
+    }
 }
