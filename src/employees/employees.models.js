@@ -3,7 +3,7 @@ const ObjectId = require('mongodb').ObjectId;
 
 const db = require('../../config/dbs');
 
-const COLLECTION = 'Accounts';
+const COLLECTION = 'Employees';
 
 module.exports = {
     addAccount: async(account)=>{
@@ -15,7 +15,7 @@ module.exports = {
     getAll: async ()=>{
         return await db.collection(COLLECTION).all();
     },
-    getAccount: async (username) => await db.collection(COLLECTION).get({
+    getEmployee: async (username) => await db.collection(COLLECTION).get({
         username
     }),
     getAccountByAccountNumber: async (accountNumber) => await db.collection(COLLECTION).get({
