@@ -1,11 +1,68 @@
+const bcrypt = require('bcrypt');
+
+const otherVariable = require('../../variables/others');
+
 const accountModel = require('../accounts/accounts.models');
 const transactionModel = require('../transactions/transactions.models');
+const employeeModel = require('../employees/employees.models');
 
 const commonMethod = require('../common/common.methods');
 
 const {
     getInterbankAccountFunction
 } = require('../transactions/transactions.controllers');
+
+exports.getEmployees = async (req, res) => {
+    const employees = await employeeModel.getAll();
+    res.send(employees);
+}
+
+exports.createEmployee = async (req, res) => {
+    const username = req.body.username.toLowerCase();
+
+    const employee = await employeeModel.getEmployee(username);
+    if (employee) {
+        return res.status(409).send("Tên đăng nhập đã tồn tại.");
+    }
+
+    let initialPassword = "";
+    for (let i = 0; i < 5; i++) {
+        initialPassword += Math.floor(Math.random() * 10).toString();
+    }
+    const password = bcrypt.hashSync(initialPassword, otherVariable.SALT_ROUNDS);
+
+    const newEmployee = {
+        username,
+        initialPassword,
+        password,
+        name: req.body.name,
+        phone: req.body.phone
+    }
+
+    const createEmployee = await employeeModel.addEmployee(newEmployee);
+    if (!createEmployee) {
+        return res.status(400).send('Có lỗi trong quá trình tạo tài khoản nhân viên, vui lòng thử lại.');
+    }
+
+    const data = await employeeModel.getEmployee(username);
+    res.send(data);
+}
+
+exports.deleteEmployee = async (req, res) => {
+    const _id = req.params._id;
+    const employee = await employeeModel.detail(_id);
+    if (!employee) {
+        return res.status(400).send('Nhân viên không tồn tại.');
+    }
+    
+    const deleteEmployee = await employeeModel.deleteEmployee(_id);
+    if (!deleteEmployee) {
+        return res.status(400).send('Xóa nhân viên không thành công, vui lòng thử lại.');
+    }
+    return res.send({
+        _id
+    })
+}
 
 exports.getAccounts = async (req, res) => {
     const accounts = await accountModel.getAll();

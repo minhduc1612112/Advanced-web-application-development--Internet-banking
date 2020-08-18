@@ -6,39 +6,33 @@ const db = require('../../config/dbs');
 const COLLECTION = 'Employees';
 
 module.exports = {
-    addAccount: async(account)=>{
-        return await db.collection(COLLECTION).add(account);
+    addEmployee: async (employee) => {
+        return await db.collection(COLLECTION).add(employee);
     },
     detail: async (_id) => {
         return await db.collection(COLLECTION).detail(_id);
     },
-    getAll: async ()=>{
+    getAll: async () => {
         return await db.collection(COLLECTION).all();
     },
     getEmployee: async (username) => await db.collection(COLLECTION).get({
         username
     }),
-    getAccountByAccountNumber: async (accountNumber) => await db.collection(COLLECTION).get({
-        accountNumber
-    }),
-    getAccountByEmail: async (email) => await db.collection(COLLECTION).get({
-        email
-    }),
     validPassword: async (_id, password) => {
-        const account = await db.collection(COLLECTION).get({
+        const employee = await db.collection(COLLECTION).get({
             _id
         });
-        if (!account) {
+        if (!employee) {
             return false;
         }
-        return bcrypt.compare(password, account.password);
+        return bcrypt.compare(password, employee.password);
     },
     verifyRefreshToken: async (_id, refreshToken) => {
-        const account = await db.collection(COLLECTION).detail(_id);
-        if (!account) {
+        const employee = await db.collection(COLLECTION).detail(_id);
+        if (!employee) {
             return false;
         }
-        if (account.refreshToken !== refreshToken) {
+        if (employee.refreshToken !== refreshToken) {
             return false;
         }
         return true;
@@ -76,15 +70,10 @@ module.exports = {
         }
         return await db.collection(COLLECTION).update(query, newValue);
     },
-    updateReceivers: async (_id, receivers) => {
+    deleteEmployee: async (_id) => {
         const query = {
             _id: ObjectId(_id)
         }
-        const newValue = {
-            $set: {
-                receivers
-            }
-        }
-        return await db.collection(COLLECTION).update(query, newValue);
+        return await db.collection(COLLECTION).delete(query);
     }
 }
